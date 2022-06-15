@@ -1479,3 +1479,310 @@ PS C:\Users\mao\Desktop>
 
 # Docker 容器数据卷
 
+命令：docker run -it --privileged=true -v 宿主机绝对路径目录:/容器内目录  镜像名
+
+
+
+ --privileged=true：
+
+Docker挂载主机目录访问如果出现cannot open directory .: Permission denied
+
+使用--privileged=true可以解决此问题
+
+
+
+```sh
+docker run -it  --privileged=true  -p6380:6379 --name redis1 -v H:/Docker/redis:/redis redis
+```
+
+
+
+读写：
+
+命令： docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录:rw   镜像名
+
+只读：
+
+命令： docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录:ro   镜像名
+
+
+
+
+
+
+
+# 常用安装
+
+## 安装Tomcat
+
+1. 搜索镜像
+
+命令：docker search tomcat
+
+```sh
+PS C:\Users\mao\Desktop> docker search Tomcat
+NAME                                           DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
+tomcat                                         Apache Tomcat is an open source implementati…   3341      [OK]
+tomee                                          Apache TomEE is an all-Apache Java EE certif…   97        [OK]
+bitnami/tomcat                                 Bitnami Tomcat Docker Image                     45                   [OK]
+arm32v7/tomcat                                 Apache Tomcat is an open source implementati…   11
+rightctrl/tomcat                               CentOS , Oracle Java, tomcat application ssl…   7                    [OK]
+arm64v8/tomcat                                 Apache Tomcat is an open source implementati…   7
+jelastic/tomcat                                An image of the Tomcat Java application serv…   4
+amd64/tomcat                                   Apache Tomcat is an open source implementati…   4
+tomcat2111/pisignage-server                    PiSignage Server                                3                    [OK]
+oobsri/tomcat8                                 Testing CI Jobs with different names.           2
+cfje/tomcat-resource                           Tomcat Concourse Resource                       2
+appsvc/tomcat                                                                                  1
+chenyufeng/tomcat-centos                       tomcat基于centos6的镜像                              1                    [OK]
+ppc64le/tomcat                                 Apache Tomcat is an open source implementati…   1
+tomcatling/jupyterhub_aws                                                                      1
+tomcat2111/papercut-mf                         PaperCut MF Application Server                  0
+softwareplant/tomcat                           Tomcat images for jira-cloud testing            0                    [OK]
+tomcatengineering/pg_backup_rotated            Clone of martianrock/pg_backup_rotated but w…   0
+misolims/miso-base                             MySQL 5.7 Database and Tomcat 8 Server neede…   0
+s390x/tomcat                                   Apache Tomcat is an open source implementati…   0
+tomcat2111/bitbucket-pipelines-elasticsearch   Elasticsearch for Bitbucket's Pipelines         0
+semoss/docker-tomcat                           Tomcat, Java, Maven, and Git on top of debian   0                    [OK]
+tomcat2111/phpredisadmin                       This is a Docker image for phpredisadmin        0                    [OK]
+secoresearch/tomcat-varnish                    Tomcat and Varnish 5.0                          0                    [OK]
+tomcat0823/auto1                                                                               0
+PS C:\Users\mao\Desktop>
+```
+
+
+
+2. 下载
+
+命令：docker pull tomcat
+
+```sh
+PS C:\Users\mao\Desktop> docker pull tomcat
+Using default tag: latest
+latest: Pulling from library/tomcat
+e756f3fdd6a3: Pull complete
+bf168a674899: Pull complete
+e604223835cc: Pull complete
+6d5c91c4cd86: Pull complete
+5e20d165240e: Pull complete
+1334d60df9a8: Pull complete
+16c2728dcd90: Pull complete
+05288798d23d: Pull complete
+c022dc2b2581: Pull complete
+d86ac2f896ee: Pull complete
+Digest: sha256:b4e84cff017ff5202cb760ccb1373dd950158f926d6afb04bd5e9f7337291501
+Status: Downloaded newer image for tomcat:latest
+docker.io/library/tomcat:latest
+PS C:\Users\mao\Desktop>
+```
+
+
+
+3. 查看是否拉取成功
+
+docker images
+
+```sh
+PS C:\Users\mao\Desktop> docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+tomcat       latest    c795915cb678   2 weeks ago   680MB
+redis        latest    53aa81e8adfa   2 weeks ago   117MB
+mysql        latest    65b636d5542b   2 weeks ago   524MB
+ubuntu       latest    d2e4e1f51132   6 weeks ago   77.8MB
+PS C:\Users\mao\Desktop>
+```
+
+
+
+4. 运行
+
+ 命令：docker run -d --name tomcat1 -p8080:8080 tomcat
+
+命令：docker run -d --name tomcat1 -p8080:8080 --privileged=true  -v H:/Docker/tomcat/:/usr/local/tomcat/webapps  tomcat 
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker run -d --name tomcat1 -p8080:8080 --privileged=true  -v H:/Docker/tomcat/:/usr/local/tomcat/webapps  tomcat
+3ca156e4541d4828906f34700fd690ea9bce0e543117ed27724cea70cf9f5780
+PS C:\Users\mao\Desktop> docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS                      PORTS                    NAMES
+3ca156e4541d   tomcat    "catalina.sh run"        15 seconds ago   Up 14 seconds               0.0.0.0:8080->8080/tcp   tomcat1
+3948921a6099   redis     "docker-entrypoint.s…"   52 minutes ago   Exited (0) 11 minutes ago                            redis1
+PS C:\Users\mao\Desktop>
+```
+
+
+
+5. 测试
+
+访问8080端口
+
+
+
+
+
+## 安装mysql
+
+1. 搜索和下载
+
+命令：docker pull mysql
+
+
+
+2. 查看是否拉取成功
+
+docker images
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+tomcat       latest    c795915cb678   2 weeks ago   680MB
+redis        latest    53aa81e8adfa   2 weeks ago   117MB
+mysql        latest    65b636d5542b   2 weeks ago   524MB
+ubuntu       latest    d2e4e1f51132   6 weeks ago   77.8MB
+PS C:\Users\mao\Desktop>
+```
+
+
+
+3. 运行
+
+命令：docker run -p 3307:3306 -e MYSQL_ROOT_PASSWORD=123456 -d mysql
+
+命令：
+
+```sh
+docker run -d -p 3307:3306 --privileged=true -v H:/Docker/mysql/log/:/var/log/mysql -v H:/Docker/mysql/data:/var/lib/mysql -v H:/Docker/mysql/conf:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=123456  --name mysql1 mysql
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker run -d -p 3307:3306 --privileged=true -v H:/Docker/mysql/log/:/var/log/mysql -v H:/Docker/mysql/data:/var/lib/mysql -v H:/Docker/mysql/conf:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=123456  --name mysql1 mysql
+2d379d342bb6879bef7d9e359cb532f6146c108b26a72fcc2e7085301331d200
+PS C:\Users\mao\Desktop> docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED             STATUS                       PORTS                               NAMES
+2d379d342bb6   mysql     "docker-entrypoint.s…"   48 seconds ago      Up 47 seconds                33060/tcp, 0.0.0.0:3307->3306/tcp   mysql1
+3ca156e4541d   tomcat    "catalina.sh run"        22 minutes ago      Exited (143) 8 minutes ago                                       tomcat1
+3948921a6099   redis     "docker-entrypoint.s…"   About an hour ago   Exited (0) 34 minutes ago                                        redis1
+PS C:\Users\mao\Desktop>
+```
+
+
+
+4. 在H:\Docker\mysql\conf下创建my.conf
+
+写入一下内容
+
+```sh
+default_character_set=utf8
+collation_server = utf8_general_ci
+character_set_server = utf8
+```
+
+
+
+5. 测试
+
+```sh
+PS C:\Users\mao\Desktop> mysql -P 3307 -u root -p
+Enter password: ******
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 10
+Server version: 8.0.29 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.00 sec)
+
+mysql>
+```
+
+
+
+6. 验证编码
+
+```sh
+mysql> SHOW VARIABLES LIKE 'character%'
+    -> ;
++--------------------------+--------------------------------+
+| Variable_name            | Value                          |
++--------------------------+--------------------------------+
+| character_set_client     | gbk                            |
+| character_set_connection | gbk                            |
+| character_set_database   | utf8mb4                        |
+| character_set_filesystem | binary                         |
+| character_set_results    | gbk                            |
+| character_set_server     | utf8mb4                        |
+| character_set_system     | utf8mb3                        |
+| character_sets_dir       | /usr/share/mysql-8.0/charsets/ |
++--------------------------+--------------------------------+
+8 rows in set (0.01 sec)
+```
+
+
+
+7. 数据测试
+
+```sh
+mysql> create database db1
+    -> ;
+Query OK, 1 row affected (0.12 sec)
+
+mysql> use db1
+Database changed
+mysql> create table test(id int,name char(6));
+Query OK, 0 rows affected (0.37 sec)
+
+mysql> show tables;
++---------------+
+| Tables_in_db1 |
++---------------+
+| test          |
++---------------+
+1 row in set (0.00 sec)
+
+mysql> insert into test values(1,"1234");
+Query OK, 1 row affected (0.09 sec)
+
+mysql> insert into test values(1,"你好");
+Query OK, 1 row affected (0.09 sec)
+
+mysql> select * from test;
++------+------+
+| id   | name |
++------+------+
+|    1 | 1234 |
+|    1 | 你好 |
++------+------+
+2 rows in set (0.00 sec)
+
+mysql>
+```
+
+
+
+
+
+
+
+## 安装redis
+
