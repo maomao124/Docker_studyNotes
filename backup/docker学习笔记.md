@@ -2045,3 +2045,979 @@ OK
 
 # DockerFile
 
+## 是什么？
+
+Dockerfile是用来构建Docker镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
+
+Dockerfile，需要定义一个Dockerfile，Dockerfile定义了进程需要的一切东西。Dockerfile涉及的内容包括执行代码或者是文件、环境变量、依赖包、运行时环境、动态链接库、操作系统的发行版、服务进程和内核进程(当应用进程需要和系统服务和内核进程打交道，这时需要考虑如何设计namespace的权限控制)等等;
+
+
+
+## 构建过程
+
+* 每条保留字指令都必须为大写字母且后面要跟随至少一个参数
+* 指令按照从上到下，顺序执行
+* #表示注释
+* 每条指令都会创建一个新的镜像层并对镜像进行提交
+
+
+
+1. docker从基础镜像运行一个容器
+2. 执行一条指令并对容器作出修改
+3. 执行类似docker commit的操作提交一个新的镜像层
+4. docker再基于刚提交的镜像运行一个新容器
+5. 执行dockerfile中的下一条指令直到所有指令都执行完成
+
+
+
+
+
+## 保留字
+
+### FROM
+
+基础镜像，当前新镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一条必须是from
+
+
+
+### MAINTAINER
+
+maintainer，镜像维护者的姓名和邮箱地址
+
+
+
+### RUN
+
+容器构建时需要运行的命令
+
+一共有两种模式：
+
+* shell模式：RUN 命令
+* exec模式：RUN["可执行文件","参数1","参数2"......]
+
+RUN在docker build时运行
+
+
+
+### EXPOSE
+
+当前容器对外暴露出的端口
+
+
+
+### WORKDIR
+
+指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点
+
+
+
+### USER
+
+指定该镜像以什么样的用户去执行，如果都不指定，默认是root
+
+
+
+### ENV
+
+用来在构建镜像过程中设置环境变量
+
+```SH
+ENV 变量名 变量值
+```
+
+比如：
+
+```sh
+ENV JAVA_HOME /usr/test
+```
+
+
+
+### ADD
+
+将宿主机目录下的文件拷贝进镜像且会自动处理URL和解压tar压缩包
+
+
+
+### COPY
+
+类似ADD，拷贝文件和目录到镜像中，但是不解压
+
+```sh
+COPY src dest
+```
+
+
+
+### VOLUME
+
+容器数据卷，用于数据保存和持久化工作
+
+
+
+### CMD
+
+指定容器启动后的要干的事情
+
+一共有两种模式：
+
+* shell模式：RUN 命令
+* exec模式：RUN["可执行文件","参数1","参数2"......]
+
+Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，CMD 会被 docker run 之后的参数替换
+
+CMD是在docker run 时运行。
+
+
+
+### ENTRYPOINT
+
+类似于 CMD 指令，但是ENTRYPOINT不会被docker run后面的命令覆盖，而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序
+
+ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。
+
+当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成 ENTRYPOINT CMD
+
+
+
+如果 Dockerfile 中如果存在多个 ENTRYPOINT 指令，仅最后一个生效。
+
+
+
+### 示例
+
+```dockerfile
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
+FROM amazoncorretto:17
+
+ENV CATALINA_HOME /usr/local/tomcat
+ENV PATH $CATALINA_HOME/bin:$PATH
+RUN mkdir -p "$CATALINA_HOME"
+WORKDIR $CATALINA_HOME
+
+# let "Tomcat Native" live somewhere isolated
+ENV TOMCAT_NATIVE_LIBDIR $CATALINA_HOME/native-jni-lib
+ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$TOMCAT_NATIVE_LIBDIR
+
+# see https://www.apache.org/dist/tomcat/tomcat-10/KEYS
+# see also "versions.sh" (https://github.com/docker-library/tomcat/blob/master/versions.sh)
+ENV GPG_KEYS A9C5DF4D22E99998D9875A5110C01C5A2F6059E7
+
+ENV TOMCAT_MAJOR 10
+ENV TOMCAT_VERSION 10.0.22
+ENV TOMCAT_SHA512 fe46db8794f066882b30e7a94bd8d3dbcf29e8e8ffaf67c1355846755745a7c9eafd124819283f218bcf410921a485b44b57b56fd6251fb99d67d95f3dd36826
+
+RUN set -eux; \
+	\
+# http://yum.baseurl.org/wiki/YumDB.html
+	if ! command -v yumdb > /dev/null; then \
+		yum install -y yum-utils; \
+		yumdb set reason dep yum-utils; \
+	fi; \
+# a helper function to "yum install" things, but only if they aren't installed (and to set their "reason" to "dep" so "yum autoremove" can purge them for us)
+	_yum_install_temporary() { ( set -eu +x; \
+		local pkg todo=''; \
+		for pkg; do \
+			if ! rpm --query "$pkg" > /dev/null 2>&1; then \
+				todo="$todo $pkg"; \
+			fi; \
+		done; \
+		if [ -n "$todo" ]; then \
+			set -x; \
+			yum install -y $todo; \
+			yumdb set reason dep $todo; \
+		fi; \
+	) }; \
+	_yum_install_temporary gzip tar; \
+	\
+	ddist() { \
+		local f="$1"; shift; \
+		local distFile="$1"; shift; \
+		local mvnFile="${1:-}"; \
+		local success=; \
+		local distUrl=; \
+		for distUrl in \
+# https://issues.apache.org/jira/browse/INFRA-8753?focusedCommentId=14735394#comment-14735394
+			"https://www.apache.org/dyn/closer.cgi?action=download&filename=$distFile" \
+# if the version is outdated (or we're grabbing the .asc file), we might have to pull from the dist/archive :/
+			"https://downloads.apache.org/$distFile" \
+			"https://www-us.apache.org/dist/$distFile" \
+			"https://www.apache.org/dist/$distFile" \
+			"https://archive.apache.org/dist/$distFile" \
+# if all else fails, let's try Maven (https://www.mail-archive.com/users@tomcat.apache.org/msg134940.html; https://mvnrepository.com/artifact/org.apache.tomcat/tomcat; https://repo1.maven.org/maven2/org/apache/tomcat/tomcat/)
+			${mvnFile:+"https://repo1.maven.org/maven2/org/apache/tomcat/tomcat/$mvnFile"} \
+		; do \
+			if curl -fL -o "$f" "$distUrl" && [ -s "$f" ]; then \
+				success=1; \
+				break; \
+			fi; \
+		done; \
+		[ -n "$success" ]; \
+	}; \
+	\
+	ddist 'tomcat.tar.gz' "tomcat/tomcat-$TOMCAT_MAJOR/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz" "$TOMCAT_VERSION/tomcat-$TOMCAT_VERSION.tar.gz"; \
+	echo "$TOMCAT_SHA512 *tomcat.tar.gz" | sha512sum --strict --check -; \
+	ddist 'tomcat.tar.gz.asc' "tomcat/tomcat-$TOMCAT_MAJOR/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz.asc" "$TOMCAT_VERSION/tomcat-$TOMCAT_VERSION.tar.gz.asc"; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	for key in $GPG_KEYS; do \
+		gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"; \
+	done; \
+	gpg --batch --verify tomcat.tar.gz.asc tomcat.tar.gz; \
+	tar -xf tomcat.tar.gz --strip-components=1; \
+	rm bin/*.bat; \
+	rm tomcat.tar.gz*; \
+	command -v gpgconf && gpgconf --kill all || :; \
+	rm -rf "$GNUPGHOME"; \
+	\
+# https://tomcat.apache.org/tomcat-9.0-doc/security-howto.html#Default_web_applications
+	mv webapps webapps.dist; \
+	mkdir webapps; \
+# we don't delete them completely because they're frankly a pain to get back for users who do want them, and they're generally tiny (~7MB)
+	\
+	nativeBuildDir="$(mktemp -d)"; \
+	tar -xf bin/tomcat-native.tar.gz -C "$nativeBuildDir" --strip-components=1; \
+	_yum_install_temporary \
+		apr-devel \
+		gcc \
+		make \
+		openssl11-devel \
+	; \
+	( \
+		export CATALINA_HOME="$PWD"; \
+		cd "$nativeBuildDir/native"; \
+		aprConfig="$(command -v apr-1-config)"; \
+		./configure \
+			--libdir="$TOMCAT_NATIVE_LIBDIR" \
+			--prefix="$CATALINA_HOME" \
+			--with-apr="$aprConfig" \
+			--with-java-home="$JAVA_HOME" \
+			--with-ssl=yes \
+		; \
+		nproc="$(nproc)"; \
+		make -j "$nproc"; \
+		make install; \
+	); \
+	rm -rf "$nativeBuildDir"; \
+	rm bin/tomcat-native.tar.gz; \
+	\
+# mark any explicit dependencies as manually installed
+	find "$TOMCAT_NATIVE_LIBDIR" -type f -executable -exec ldd '{}' ';' \
+		| awk '/=>/ && $(NF-1) != "=>" { print $(NF-1) }' \
+		| xargs -rt readlink -e \
+		| sort -u \
+		| xargs -rt rpm --query --whatprovides \
+		| sort -u \
+		| tee "$TOMCAT_NATIVE_LIBDIR/.dependencies.txt" \
+		| xargs -r yumdb set reason user \
+	; \
+	\
+# clean up anything added temporarily and not later marked as necessary
+	yum autoremove -y; \
+	yum clean all; \
+	rm -rf /var/cache/yum; \
+	\
+# sh removes env vars it doesn't support (ones with periods)
+# https://github.com/docker-library/tomcat/issues/77
+	find ./bin/ -name '*.sh' -exec sed -ri 's|^#!/bin/sh$|#!/usr/bin/env bash|' '{}' +; \
+	\
+# fix permissions (especially for running as non-root)
+# https://github.com/docker-library/tomcat/issues/35
+	chmod -R +rX .; \
+	chmod 777 logs temp work; \
+	\
+# smoke test
+	catalina.sh version
+
+# verify Tomcat Native is working properly
+RUN set -eux; \
+	nativeLines="$(catalina.sh configtest 2>&1)"; \
+	nativeLines="$(echo "$nativeLines" | grep 'Apache Tomcat Native')"; \
+	nativeLines="$(echo "$nativeLines" | sort -u)"; \
+	if ! echo "$nativeLines" | grep -E 'INFO: Loaded( APR based)? Apache Tomcat Native library' >&2; then \
+		echo >&2 "$nativeLines"; \
+		exit 1; \
+	fi
+
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+```
+
+
+
+
+
+
+
+## 自定义镜像
+
+### java17
+
+说明：使用Ubuntu镜像，生成包含java17，vim、ifconfig的镜像
+
+#### 下载java17
+
+下载页面
+
+[Java Downloads | Oracle](https://www.oracle.com/java/technologies/downloads/#java17)
+
+直接下载
+
+https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz
+
+
+
+#### 放入指定目录
+
+我放入的目录是C:\Users\mao\Desktop\test
+
+
+
+#### 新建Dockerfile文件
+
+在刚才的目录下建立一个Dockerfile文件，要和jdk的存放目录一致
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> ls
+
+
+    目录: C:\Users\mao\Desktop\test
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/6/17     21:47              0 Dockerfile
+-a----         2022/6/17     21:42      181203151 jdk-17_linux-x64_bin.tar.gz
+
+
+PS C:\Users\mao\Desktop\test>
+
+```
+
+
+
+#### 编写Dockerfile文件
+
+使用记事本打开，输入以下命令
+
+
+
+```dockerfile
+#基础镜像，当前新镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一条必须是from
+FROM ubuntu
+# 镜像维护者的姓名和邮箱地址
+MAINTAINER mao<1296193245@qq.com>
+#用来在构建镜像过程中设置环境变量
+ENV MYPATH /usr/local
+# 指定在创建容器后，终端默认登陆的进来工作目录
+WORKDIR $MYPATH
+
+#更新依赖
+RUN apt-get update
+#安装vim编辑器
+RUN apt-get -y install vim
+#安装ifconfig命令查看网络IP
+RUN apt-get install net-tools
+#安装java17及lib库
+# RUN apt-get -y install glibc
+# 创建一个文件夹
+RUN mkdir /usr/local/java
+#ADD 是相对路径jar,把jdk-17_linux-x64_bin.tar.gz添加到容器中,安装包必须要和Dockerfile文件在同一位置
+ADD jdk-17_linux-x64_bin.tar.gz /usr/local/java/
+#配置java环境变量
+ENV JAVA_HOME /usr/local/java/jdk-17.0.3.1
+ENV JRE_HOME $JAVA_HOME/jre
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+ENV PATH $JAVA_HOME/bin:$PATH
+ 
+#暴露端口
+EXPOSE 80
+
+#打印
+CMD echo $MYPATH
+CMD echo "success--------------ok"
+# 如果不传入参数，默认运行/bin/bash
+CMD /bin/bash
+```
+
+
+
+#### 构建
+
+构建命令：
+
+```sh
+docker build -t 新镜像名字:TAG .
+```
+
+
+
+
+
+运行命令：
+
+```sh
+docker build -t java17:1.0 .
+```
+
+
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker build -t java17:1.0 .
+[+] Building 5.1s (12/12) FINISHED
+ => [internal] load build definition from Dockerfile                                                                                                       0.0s
+ => => transferring dockerfile: 1.23kB                                                                                                                     0.0s
+ => [internal] load .dockerignore                                                                                                                          0.0s
+ => => transferring context: 2B                                                                                                                            0.0s
+ => [internal] load metadata for docker.io/library/ubuntu:latest                                                                                           0.0s
+ => [1/7] FROM docker.io/library/ubuntu                                                                                                                    0.0s
+ => [internal] load build context                                                                                                                          0.0s
+ => => transferring context: 51B                                                                                                                           0.0s
+ => CACHED [2/7] WORKDIR /usr/local                                                                                                                        0.0s
+ => CACHED [3/7] RUN apt-get update                                                                                                                        0.0s
+ => CACHED [4/7] RUN apt-get -y install vim                                                                                                                0.0s
+ => CACHED [5/7] RUN apt-get install net-tools                                                                                                             0.0s
+ => [6/7] RUN mkdir /usr/local/java                                                                                                                        0.4s
+ => [7/7] ADD jdk-17_linux-x64_bin.tar.gz /usr/local/java/                                                                                                 3.5s
+ => exporting to image                                                                                                                                     1.2s
+ => => exporting layers                                                                                                                                    1.2s
+ => => writing image sha256:282982c69086e51636a387c7156a1e246a6f7109c36a663c09e0302ec2c95a03                                                               0.0s
+ => => naming to docker.io/library/java17:1.0                                                                                                              0.0s
+
+Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+#### 查看镜像
+
+
+
+```sh
+docker images
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+java17       1.0       282982c69086   12 seconds ago   489MB
+tomcat       latest    c795915cb678   2 weeks ago      680MB
+redis        latest    53aa81e8adfa   2 weeks ago      117MB
+mysql        latest    65b636d5542b   2 weeks ago      524MB
+ubuntu       latest    d2e4e1f51132   6 weeks ago      77.8MB
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+#### 运行容器
+
+```sh
+docker run -it --name java17 java17:1.0 /bin/bash
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker run -it --name java17 java17:1.0 /bin/bash
+root@20c9959d6873:/usr/local# pwd
+/usr/local
+root@20c9959d6873:/usr/local# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.17.0.2  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:ac:11:00:02  txqueuelen 0  (Ethernet)
+        RX packets 10  bytes 876 (876.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@20c9959d6873:/usr/local# vim
+root@20c9959d6873:/usr/local# ls
+bin  etc  games  include  java  lib  man  sbin  share  src  test.txt
+root@20c9959d6873:/usr/local# java -version
+java version "17.0.3.1" 2022-04-22 LTS
+Java(TM) SE Runtime Environment (build 17.0.3.1+2-LTS-6)
+Java HotSpot(TM) 64-Bit Server VM (build 17.0.3.1+2-LTS-6, mixed mode, sharing)
+root@20c9959d6873:/usr/local#
+```
+
+
+
+
+
+
+
+# Docker运行后端服务
+
+## 创建springboot项目
+
+项目名称为Docker_boot
+
+## maven
+
+maven的pom.xml文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>mao</groupId>
+    <artifactId>Docker_boot</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Docker_boot</name>
+    <description>Docker_boot</description>
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+```
+
+
+
+## 配置
+
+application.yml文件：
+
+
+
+```yaml
+
+#多环境开发---单文件
+spring:
+  profiles:
+    # 当前环境
+    active: dev
+
+#-----通用环境---------------------------------------------------------
+
+
+server:
+  #配置端口号
+  port: 8082
+
+
+
+---
+#------开发环境--------------------------------------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+
+
+
+# 开启debug模式，输出调试信息，常用于检查系统运行状况
+#debug: true
+
+# 设置日志级别，root表示根节点，即整体应用日志级别
+logging:
+ # 日志输出到文件的文件名
+  file:
+     name: server.log
+  # 字符集
+  charset:
+    file: UTF-8
+  # 分文件
+  logback:
+    rollingpolicy:
+      #最大文件大小
+      max-file-size: 16KB
+      # 文件格式
+      file-name-pattern: server_log-%d{yyyy/MM月/dd日/}%i.log
+  # 设置日志组
+  group:
+  # 自定义组名，设置当前组中所包含的包
+    mao_pro: mao
+  level:
+    root: info
+    # 为对应组设置日志级别
+    mao_pro: debug
+    # 日志输出格式
+# pattern:
+  # console: "%d %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
+
+
+
+
+---
+#----生产环境----------------------------------------------------
+
+
+spring:
+  config:
+    activate:
+      on-profile: pro
+
+
+
+
+
+
+# 开启debug模式，输出调试信息，常用于检查系统运行状况
+#debug: true
+
+# 设置日志级别，root表示根节点，即整体应用日志级别
+logging:
+  # 日志输出到文件的文件名
+  file:
+    name: server.log
+  # 字符集
+  charset:
+    file: UTF-8
+  # 分文件
+  logback:
+    rollingpolicy:
+      #最大文件大小
+      max-file-size: 4MB
+      # 文件格式
+      file-name-pattern: server_log-%d{yyyy/MM月/dd日/}%i.log
+  # 设置日志组
+  group:
+    # 自定义组名，设置当前组中所包含的包
+    mao_pro: mao
+  level:
+    root: info
+    # 为对应组设置日志级别
+    mao_pro: warn
+    # 日志输出格式
+  # pattern:
+  # console: "%d %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
+
+
+
+---
+#----测试环境-----------------------------------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+
+
+```
+
+
+
+
+
+## controller
+
+
+
+MyController：
+
+```java
+package mao.docker_boot.controller;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
+
+/**
+ * Project name(项目名称)：Docker_boot
+ * Package(包名): mao.docker_boot.controller
+ * Class(类名): MyController
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/6/17
+ * Time(创建时间)： 23:01
+ * Version(版本): 1.0
+ * Description(描述)： 业务类
+ */
+
+@RestController
+public class MyController
+{
+    /**
+     * 端口号，从配置文件里读
+     */
+    @Value("${server.port}")
+    private String port;
+
+    @RequestMapping("/docker")
+    public String helloDocker()
+    {
+        return "hello docker and spring boot"+"<br>端口号："+port+"<br>"+ UUID.randomUUID();
+    }
+
+    @RequestMapping(value ="/index",method = RequestMethod.GET)
+    public String index()
+    {
+        return "服务端口号: "+""+port+"<br>"+UUID.randomUUID();
+    }
+}
+
+```
+
+
+
+
+
+## 启动测试
+
+
+
+```sh
+C:\Users\mao\.jdks\openjdk-16.0.2\bin\java.exe -XX:TieredStopAtLevel=1 -noverify -Dspring.output.ansi.enabled=always "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.2.2\lib\idea_rt.jar=54055:C:\Program Files\JetBrains\IntelliJ IDEA 2021.2.2\bin" -Dcom.sun.management.jmxremote -Dspring.jmx.enabled=true -Dspring.liveBeansView.mbeanDomain -Dspring.application.admin.enabled=true -Dfile.encoding=UTF-8 -classpath H:\程序\大三下期\Docker_boot\target\classes;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-web\2.7.0\spring-boot-starter-web-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter\2.7.0\spring-boot-starter-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot\2.7.0\spring-boot-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\2.7.0\spring-boot-autoconfigure-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-logging\2.7.0\spring-boot-starter-logging-2.7.0.jar;C:\Users\mao\.m2\repository\ch\qos\logback\logback-classic\1.2.11\logback-classic-1.2.11.jar;C:\Users\mao\.m2\repository\ch\qos\logback\logback-core\1.2.11\logback-core-1.2.11.jar;C:\Users\mao\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.17.2\log4j-to-slf4j-2.17.2.jar;C:\Users\mao\.m2\repository\org\apache\logging\log4j\log4j-api\2.17.2\log4j-api-2.17.2.jar;C:\Users\mao\.m2\repository\org\slf4j\jul-to-slf4j\1.7.36\jul-to-slf4j-1.7.36.jar;C:\Users\mao\.m2\repository\jakarta\annotation\jakarta.annotation-api\1.3.5\jakarta.annotation-api-1.3.5.jar;C:\Users\mao\.m2\repository\org\yaml\snakeyaml\1.30\snakeyaml-1.30.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-json\2.7.0\spring-boot-starter-json-2.7.0.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.13.3\jackson-databind-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.13.3\jackson-annotations-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.13.3\jackson-core-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.13.3\jackson-datatype-jdk8-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.13.3\jackson-datatype-jsr310-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\module\jackson-module-parameter-names\2.13.3\jackson-module-parameter-names-2.13.3.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\2.7.0\spring-boot-starter-tomcat-2.7.0.jar;C:\Users\mao\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\9.0.63\tomcat-embed-core-9.0.63.jar;C:\Users\mao\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\9.0.63\tomcat-embed-el-9.0.63.jar;C:\Users\mao\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\9.0.63\tomcat-embed-websocket-9.0.63.jar;C:\Users\mao\.m2\repository\org\springframework\spring-web\5.3.20\spring-web-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-beans\5.3.20\spring-beans-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-webmvc\5.3.20\spring-webmvc-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-aop\5.3.20\spring-aop-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-context\5.3.20\spring-context-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-expression\5.3.20\spring-expression-5.3.20.jar;C:\Users\mao\.m2\repository\org\slf4j\slf4j-api\1.7.36\slf4j-api-1.7.36.jar;C:\Users\mao\.m2\repository\org\springframework\spring-core\5.3.20\spring-core-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-jcl\5.3.20\spring-jcl-5.3.20.jar mao.docker_boot.DockerBootApplication
+OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.0)
+
+2022-06-17 23:07:20.341  INFO 19932 --- [           main] mao.docker_boot.DockerBootApplication    : Starting DockerBootApplication using Java 16.0.2 on mao with PID 19932 (H:\程序\大三下期\Docker_boot\target\classes started by mao in H:\程序\大三下期\Docker_boot)
+2022-06-17 23:07:20.343 DEBUG 19932 --- [           main] mao.docker_boot.DockerBootApplication    : Running with Spring Boot v2.7.0, Spring v5.3.20
+2022-06-17 23:07:20.344  INFO 19932 --- [           main] mao.docker_boot.DockerBootApplication    : The following 1 profile is active: "dev"
+2022-06-17 23:07:20.922  INFO 19932 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8082 (http)
+2022-06-17 23:07:20.929  INFO 19932 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-06-17 23:07:20.929  INFO 19932 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.63]
+2022-06-17 23:07:20.998  INFO 19932 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-06-17 23:07:20.999  INFO 19932 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 618 ms
+2022-06-17 23:07:21.227  INFO 19932 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8082 (http) with context path ''
+2022-06-17 23:07:21.236  INFO 19932 --- [           main] mao.docker_boot.DockerBootApplication    : Started DockerBootApplication in 1.213 seconds (JVM running for 1.648)
+
+```
+
+
+
+访问
+
+[localhost:8082/index](http://localhost:8082/index)
+
+[localhost:8082/docker](http://localhost:8082/docker)
+
+
+
+无问题
+
+
+
+## 生成jar包
+
+
+
+```sh
+mvn package
+```
+
+或者
+
+```sh
+mvn package -DskipTests
+```
+
+
+
+
+
+```sh
+PS H:\程序\大三下期\Docker_boot> mvn package
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------------< mao:Docker_boot >---------------------------
+[INFO] Building Docker_boot 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ Docker_boot ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO]
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ Docker_boot ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 2 source files to H:\程序\大三下期\Docker_boot\target\classes
+[INFO]
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ Docker_boot ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory H:\程序\大三下期\Docker_boot\src\test\resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.10.1:testCompile (default-testCompile) @ Docker_boot ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to H:\程序\大三下期\Docker_boot\target\test-classes
+[INFO]
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ Docker_boot ---
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running mao.docker_boot.DockerBootApplicationTests
+23:10:09.954 [main] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating CacheAwareContextLoaderDelegate from class [org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate]
+23:10:09.962 [main] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating BootstrapContext using constructor [public org.springframework.test.context.support.DefaultBootstrapContext(java.lang.Class,org.springframework.test.context.CacheAwareContextLoaderDelegate)]
+23:10:09.992 [main] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating TestContextBootstrapper for test class [mao.docker_boot.DockerBootApplicationTests] from class [org.springframework.boot.test.context.SpringBootTestContextBootstrapper]
+23:10:10.003 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [mao.docker_boot.DockerBootApplicationTests], using SpringBootContextLoader
+23:10:10.006 [main] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [mao.docker_boot.DockerBootApplicationTests]: class path resource [mao/docker_boot/DockerBootApplicationTests-context.xml] does not exist
+23:10:10.007 [main] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [mao.docker_boot.DockerBootApplicationTests]: class path resource [mao/docker_boot/DockerBootApplicationTestsContext.groovy] does not exist
+23:10:10.007 [main] INFO org.springframework.test.context.support.AbstractContextLoader - Could not detect default resource locations for test class [mao.docker_boot.DockerBootApplicationTests]: no resource found for suffixes {-context.xml, Context.groovy}.
+23:10:10.007 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [mao.docker_boot.DockerBootApplicationTests]: DockerBootApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+23:10:10.045 [main] DEBUG org.springframework.test.context.support.ActiveProfilesUtils - Could not find an 'annotation declaring class' for annotation type [org.springframework.test.context.ActiveProfiles] and class [mao.docker_boot.DockerBootApplicationTests]
+23:10:10.092 [main] DEBUG org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider - Identified candidate component class: file [H:\程序\大三下期\Docker_boot\target\classes\mao\docker_boot\DockerBootApplication.class]
+23:10:10.093 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration mao.docker_boot.DockerBootApplication for test class mao.docker_boot.DockerBootApplicationTests
+23:10:10.173 [main] DEBUG org.springframework.boot.test.context.SpringBootTestContextBootstrapper - @TestExecutionListeners is not present for class [mao.docker_boot.DockerBootApplicationTests]: using defaults.
+23:10:10.174 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+23:10:10.185 [main] DEBUG org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Skipping candidate TestExecutionListener [org.springframework.test.context.transaction.TransactionalTestExecutionListener] due to a missing dependency. Specify custom listener classes or make the default listener classes and their required dependencies available. Offending class: [org/springframework/transaction/interceptor/TransactionAttributeSource]
+23:10:10.185 [main] DEBUG org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Skipping candidate TestExecutionListener [org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener] due to a missing dependency. Specify custom listener classes or make the default listener classes and their required dependencies available. Offending class: [org/springframework/transaction/interceptor/TransactionAttribute]
+23:10:10.185 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@20f5281c, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@56c4278e, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@301eda63, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@3d246ea3, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@341814d3, org.springframework.test.context.support.DirtiesContextTestExecutionListener@4397ad89, org.springframework.test.context.event.EventPublishingTestExecutionListener@59cba5a, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@1bd39d3c, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@6f19ac19, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@119cbf96, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@71329995, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@768fc0f2, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@5454d35e]
+23:10:10.189 [main] DEBUG org.springframework.test.context.support.AbstractDirtiesContextTestExecutionListener - Before test class: context [DefaultTestContext@7d9e8ef7 testClass = DockerBootApplicationTests, testInstance = [null], testMethod = [null], testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@f107c50 testClass = DockerBootApplicationTests, locations = '{}', classes = '{class mao.docker_boot.DockerBootApplication}', contextInitializerClasses = '[]', activeProfiles = '{}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@4944252c, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@272ed83b, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@15bbf42f, org.springframework.boot.test.autoconfigure.actuate.metrics.MetricsExportContextCustomizerFactory$DisableMetricExportContextCustomizer@20f5239f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@3e84448c, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@4b1c1ea0], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true]], class annotated with @DirtiesContext [false] with mode [null].
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.0)
+
+2022-06-17 23:10:10.592  INFO 296 --- [           main] m.d.DockerBootApplicationTests           : Starting DockerBootApplicationTests using Java 16.0.2 on mao with PID 296 (started by mao in H:\程序\大三下期\Docker_boot)
+2022-06-17 23:10:10.593 DEBUG 296 --- [           main] m.d.DockerBootApplicationTests           : Running with Spring Boot v2.7.0, Spring v5.3.20
+2022-06-17 23:10:10.594  INFO 296 --- [           main] m.d.DockerBootApplicationTests           : The following 1 profile is active: "dev"
+2022-06-17 23:10:11.923  INFO 296 --- [           main] m.d.DockerBootApplicationTests           : Started DockerBootApplicationTests in 1.696 seconds (JVM running for 2.504)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.53 s - in mao.docker_boot.DockerBootApplicationTests
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- maven-jar-plugin:3.2.2:jar (default-jar) @ Docker_boot ---
+[INFO] Building jar: H:\程序\大三下期\Docker_boot\target\Docker_boot-0.0.1-SNAPSHOT.jar
+[INFO]
+[INFO] --- spring-boot-maven-plugin:2.7.0:repackage (repackage) @ Docker_boot ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.120 s
+[INFO] Finished at: 2022-06-17T23:10:15+08:00
+[INFO] ------------------------------------------------------------------------
+PS H:\程序\大三下期\Docker_boot>
+```
+
+
+
+项目地址：
+
+https://github.com/maomao124/Docker_boot.git/
+
+
+
+## 将jar包放入指定目录
+
+我放入的目录是C:\Users\mao\Desktop\test
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> ls
+
+
+    目录: C:\Users\mao\Desktop\test
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/6/17     23:10       17610406 Docker_boot-0.0.1-SNAPSHOT.jar
+
+
+PS C:\Users\mao\Desktop\test>
+
+```
+
+
+
+## 新建Dockerfile文件
+
+在刚才的目录下建立一个Dockerfile文件，要和jdk的存放目录一致
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> ls
+
+
+    目录: C:\Users\mao\Desktop\test
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/6/17     23:17              0 Dockerfile
+-a----         2022/6/17     23:10       17610406 Docker_boot-0.0.1-SNAPSHOT.jar
+
+
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+
+
+## 编写Dockerfile文件
+
+使用记事本打开，输入以下命令
+
+
+
+```sh
+```
+
