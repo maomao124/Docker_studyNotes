@@ -1515,7 +1515,7 @@ docker run -it  --privileged=true  -p6380:6379 --name redis1 -v H:/Docker/redis:
 
 ## 安装Tomcat
 
-1. 搜索镜像
+### 1. 搜索镜像
 
 命令：docker search tomcat
 
@@ -1552,7 +1552,7 @@ PS C:\Users\mao\Desktop>
 
 
 
-2. 下载
+### 2. 下载
 
 命令：docker pull tomcat
 
@@ -1578,7 +1578,7 @@ PS C:\Users\mao\Desktop>
 
 
 
-3. 查看是否拉取成功
+### 3. 查看是否拉取成功
 
 docker images
 
@@ -1594,7 +1594,7 @@ PS C:\Users\mao\Desktop>
 
 
 
-4. 运行
+### 4. 运行
 
  命令：docker run -d --name tomcat1 -p8080:8080 tomcat
 
@@ -1614,7 +1614,7 @@ PS C:\Users\mao\Desktop>
 
 
 
-5. 测试
+### 5. 测试
 
 访问8080端口
 
@@ -1624,13 +1624,13 @@ PS C:\Users\mao\Desktop>
 
 ## 安装mysql
 
-1. 搜索和下载
+### 1. 搜索和下载
 
 命令：docker pull mysql
 
 
 
-2. 查看是否拉取成功
+### 2. 查看是否拉取成功
 
 docker images
 
@@ -1648,7 +1648,7 @@ PS C:\Users\mao\Desktop>
 
 
 
-3. 运行
+### 3. 运行
 
 命令：docker run -p 3307:3306 -e MYSQL_ROOT_PASSWORD=123456 -d mysql
 
@@ -1673,7 +1673,7 @@ PS C:\Users\mao\Desktop>
 
 
 
-4. 在H:\Docker\mysql\conf下创建my.conf
+### 4. 在H:\Docker\mysql\conf下创建my.conf
 
 写入一下内容
 
@@ -1685,7 +1685,7 @@ character_set_server = utf8
 
 
 
-5. 测试
+### 5. 测试
 
 ```sh
 PS C:\Users\mao\Desktop> mysql -P 3307 -u root -p
@@ -1718,7 +1718,7 @@ mysql>
 
 
 
-6. 验证编码
+### 6. 验证编码
 
 ```sh
 mysql> SHOW VARIABLES LIKE 'character%'
@@ -1740,7 +1740,7 @@ mysql> SHOW VARIABLES LIKE 'character%'
 
 
 
-7. 数据测试
+### 7. 数据测试
 
 ```sh
 mysql> create database db1
@@ -1785,4 +1785,263 @@ mysql>
 
 
 ## 安装redis
+
+### 1. 搜索和下载
+
+命令：docker pull redis
+
+
+
+### 2. 查看是否拉取成功
+
+docker images
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+tomcat       latest    c795915cb678   2 weeks ago   680MB
+redis        latest    53aa81e8adfa   2 weeks ago   117MB
+mysql        latest    65b636d5542b   2 weeks ago   524MB
+ubuntu       latest    d2e4e1f51132   6 weeks ago   77.8MB
+PS C:\Users\mao\Desktop>
+```
+
+
+
+### 3. 运行
+
+命令：
+
+```sh
+docker run -p 6380:6379 --name redis1 --privileged=true -v H:/Docker/redis/conf:/etc/redis/ -v H:/Docker/redis/data/:/data -d redis redis-server /etc/redis/redis.conf
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker run -p 6380:6379 --name redis1 --privileged=true -v H:/Docker/redis/conf:/etc/redis/ -v H:/Docker/redis/data/:/data -d redis redis-server /etc/redis/redis.conf
+8a80769441281ea5f5872c3656eea04c7728b026baae1ea7a13d540fc4daecc3
+PS C:\Users\mao\Desktop> docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS                      PORTS                    NAMES
+8a8076944128   redis     "docker-entrypoint.s…"   31 seconds ago   Exited (1) 28 seconds ago                            redis1
+81902b3cfdc4   mysql     "docker-entrypoint.s…"   11 hours ago     Exited (0) 11 hours ago                              mysql3
+24ee3e986397   mysql     "docker-entrypoint.s…"   11 hours ago     Exited (0) 11 hours ago                              mysql2
+2d379d342bb6   mysql     "docker-entrypoint.s…"   36 hours ago     Exited (0) 12 hours ago                              mysql1
+3ca156e4541d   tomcat    "catalina.sh run"        37 hours ago     Up About an hour            0.0.0.0:8080->8080/tcp   tomcat1
+PS C:\Users\mao\Desktop>
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker logs 8a8076944128
+1:C 15 Jun 2022 03:06:54.166 # Fatal error, can't open config file '/etc/redis/redis.conf': No such file or directory
+PS C:\Users\mao\Desktop>
+```
+
+
+
+### 4. 创建配置文件
+
+在H:\Docker\redis\conf目录下创建redis.conf文件
+
+文件内容可以从其他redis服务器里复制并粘贴
+
+
+
+```sh
+PS H:\Docker\redis\conf> ls
+
+
+    目录: H:\Docker\redis\conf
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/6/15     11:04          66028 redis.conf
+
+
+PS H:\Docker\redis\conf>
+```
+
+```sh
+# pwd
+/data
+# cd ..
+# cd etc
+# cd redis
+# ls
+redis.conf
+#
+```
+
+
+
+### 5. 重启redis服务器
+
+命令：
+
+```sh
+docker restart redis1
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker restart redis1
+redis1
+PS C:\Users\mao\Desktop>
+```
+
+
+
+### 6. 查看日志
+
+命令：
+
+```sh
+docker logs redis1
+```
+
+
+
+```sh
+1:C 15 Jun 2022 03:14:13.190 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 15 Jun 2022 03:14:13.190 # Redis version=7.0.0, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 15 Jun 2022 03:14:13.190 # Configuration loaded
+1:M 15 Jun 2022 03:14:13.191 * monotonic clock: POSIX clock_gettime
+                _._
+           _.-``__ ''-._
+      _.-``    `.  `_.  ''-._           Redis 7.0.0 (00000000/0) 64 bit
+  .-`` .-```.  ```\/    _.,_ ''-._
+ (    '      ,       .-`  | `,    )     Running in standalone mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
+ |    `-._   `._    /     _.-'    |     PID: 1
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           https://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+              `-.__.-'
+
+1:M 15 Jun 2022 03:14:13.191 # Server initialized
+1:M 15 Jun 2022 03:14:13.191 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+1:M 15 Jun 2022 03:14:13.192 * The AOF directory appendonlydir doesn't exist
+1:M 15 Jun 2022 03:14:13.193 * Loading RDB produced by version 7.0.0
+1:M 15 Jun 2022 03:14:13.193 * RDB age 1 seconds
+1:M 15 Jun 2022 03:14:13.193 * RDB memory usage when created 0.82 Mb
+1:M 15 Jun 2022 03:14:13.193 * Done loading RDB, keys loaded: 0, keys expired: 0.
+1:M 15 Jun 2022 03:14:13.193 * DB loaded from disk: 0.002 seconds
+1:M 15 Jun 2022 03:14:13.193 * Ready to accept connections
+PS C:\Users\mao\Desktop>
+```
+
+
+
+配置文件成功加载
+
+
+
+### 7. 连接服务器
+
+外部使用命令
+
+```sh
+redis-cli -p 6380
+```
+
+
+
+```sh
+C:\Users\mao>redis-cli -p 6380
+127.0.0.1:6380> ping
+PONG
+127.0.0.1:6380>
+```
+
+
+
+或者
+
+```sh
+docker exec -it redis1 /bin/bash
+redis-cli
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker exec -it redis1 /bin/bash
+root@8a8076944128:/data# redis-cli
+127.0.0.1:6379> ping
+PONG
+127.0.0.1:6379>
+```
+
+
+
+### 8. 测试
+
+数据测试
+
+```sh
+127.0.0.1:6379> set a 1
+OK
+127.0.0.1:6379> keys *
+1) "a"
+127.0.0.1:6379> get a
+"1"
+127.0.0.1:6379>
+
+```
+
+配置文件测试
+
+当前为16个库
+
+```sh
+127.0.0.1:6379> select 15
+OK
+127.0.0.1:6379[15]> select 16
+(error) ERR DB index is out of range
+127.0.0.1:6379[15]>
+```
+
+
+
+更改库的大小，把库的数量更改为2
+
+
+
+重启服务器
+
+
+
+再次访问
+
+```sh
+127.0.0.1:6380> select 1
+OK
+127.0.0.1:6380[1]> select 2
+(error) ERR DB index is out of range
+127.0.0.1:6380[1]>
+```
+
+
+
+配置文件有效
+
+
+
+
+
+
+
+# DockerFile
 
