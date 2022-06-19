@@ -3019,5 +3019,317 @@ PS C:\Users\mao\Desktop\test>
 
 
 ```sh
+# 基础镜像使用java
+FROM java17:1.0
+# 作者
+MAINTAINER mao
+# VOLUME 指定临时文件目录为/tmp，在主机/var/lib/docker目录下创建了一个临时文件并链接到容器的/tmp
+VOLUME /tmp
+# 将jar包添加到容器中并更名为Docker_boot.jar
+ADD Docker_boot-0.0.1-SNAPSHOT.jar Docker_boot.jar
+# 运行jar包
+RUN bash -c 'touch Docker_boot.jar'
+ENTRYPOINT ["java","-jar","Docker_boot.jar"]
+#暴露端口作为微服务
+EXPOSE 8082
 ```
+
+
+
+
+
+## 构建
+
+运行命令：
+
+```sh
+docker build -t docker_boot:1.0 .
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker build -t docker_boot:1.0 .
+[+] Building 1.0s (8/8) FINISHED
+ => [internal] load build definition from Dockerfile                                                                                                       0.0s
+ => => transferring dockerfile: 501B                                                                                                                       0.0s
+ => [internal] load .dockerignore                                                                                                                          0.0s
+ => => transferring context: 2B                                                                                                                            0.0s
+ => [internal] load metadata for docker.io/library/java17:1.0                                                                                              0.0s
+ => [internal] load build context                                                                                                                          0.2s
+ => => transferring context: 17.61MB                                                                                                                       0.1s
+ => [1/3] FROM docker.io/library/java17:1.0                                                                                                                0.2s
+ => [2/3] ADD Docker_boot-0.0.1-SNAPSHOT.jar Docker_boot.jar                                                                                               0.1s
+ => [3/3] RUN bash -c 'touch Docker_boot.jar'                                                                                                              0.5s
+ => exporting to image                                                                                                                                     0.1s
+ => => exporting layers                                                                                                                                    0.1s
+ => => writing image sha256:d25f3f4955aec0b9ad19ab1e5290a1cc4a50eb283917df4ef8f520df6f37a08f                                                               0.0s
+ => => naming to docker.io/library/docker_boot:1.0                                                                                                         0.0s
+
+Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+
+
+## 查看镜像
+
+
+
+```sh
+docker images
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker images
+REPOSITORY    TAG       IMAGE ID       CREATED          SIZE
+docker_boot   1.0       d25f3f4955ae   55 seconds ago   525MB
+java17        1.0       282982c69086   14 hours ago     489MB
+tomcat        latest    c795915cb678   2 weeks ago      680MB
+redis         latest    53aa81e8adfa   2 weeks ago      117MB
+mysql         latest    65b636d5542b   2 weeks ago      524MB
+ubuntu        latest    d2e4e1f51132   7 weeks ago      77.8MB
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+## 运行容器
+
+
+
+```sh
+docker run -d -p8082:8082 --name docker_boot1 docker_boot:1.0
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker run -d -p8082:8082 --name docker_boot1 docker_boot:1.0
+251d1d54e1e699d3afdcd6b1ab08f2cd4ada9ddd9bfcd1bde0c4b72b2d563e31
+PS C:\Users\mao\Desktop\test> docker ps -a
+CONTAINER ID   IMAGE             COMMAND                  CREATED         STATUS                        PORTS                            NAMES
+251d1d54e1e6   docker_boot:1.0   "java -jar Docker_bo…"   4 seconds ago   Up 3 seconds                  80/tcp, 0.0.0.0:8082->8082/tcp   docker_boot1
+20c9959d6873   java17:1.0        "/bin/bash"              14 hours ago    Exited (255) 31 minutes ago   80/tcp                           java17
+9cf1e361139c   java17:1.0        "--name java17 /bin/…"   14 hours ago    Created                       80/tcp                           boring_vaughan
+8a8076944128   redis             "docker-entrypoint.s…"   3 days ago      Exited (255) 16 hours ago     0.0.0.0:6380->6379/tcp           redis1
+81902b3cfdc4   mysql             "docker-entrypoint.s…"   3 days ago      Exited (0) 3 days ago                                          mysql3
+24ee3e986397   mysql             "docker-entrypoint.s…"   3 days ago      Exited (0) 3 days ago                                          mysql2
+2d379d342bb6   mysql             "docker-entrypoint.s…"   4 days ago      Exited (0) 3 days ago                                          mysql1
+3ca156e4541d   tomcat            "catalina.sh run"        4 days ago      Exited (255) 24 hours ago     0.0.0.0:8080->8080/tcp           tomcat1
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+
+
+## 访问测试
+
+[localhost:8082/index](http://localhost:8082/index)
+
+[localhost:8082/docker](http://localhost:8082/docker)
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker exec -it 251d1d54e1e6 /bin/bash
+root@251d1d54e1e6:/usr/local# ls
+Docker_boot.jar  bin  etc  games  include  java  lib  man  sbin  server.log  share  src
+root@251d1d54e1e6:/usr/local# vi server.log
+```
+
+
+
+```sh
+2023-06-18 04:53:55.630  INFO 1 --- [main] mao.docker_boot.DockerBootApplication    : Starting DockerBootApplication v0.0.1-SNAPSHOT using Java 17.0.3.1 on 251d1d54e1e6 with PID 1 (/usr/local/Docker_boot.jar started by root in /usr/local)
+2022-06-18 04:53:55.632 DEBUG 1 --- [main] mao.docker_boot.DockerBootApplication    : Running with Spring Boot v2.7.0, Spring v5.3.20
+2022-06-18 04:53:55.633  INFO 1 --- [main] mao.docker_boot.DockerBootApplication    : The following 1 profile is active: "dev"
+2022-06-18 04:53:56.548  INFO 1 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8082 (http)
+2022-06-18 04:53:56.557  INFO 1 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-06-18 04:53:56.557  INFO 1 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.63]
+2022-06-18 04:53:56.619  INFO 1 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-06-18 04:53:56.619  INFO 1 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 931 ms
+2022-06-18 04:53:56.968  INFO 1 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8082 (http) with context path ''
+2022-06-18 04:53:56.981  INFO 1 --- [main] mao.docker_boot.DockerBootApplication    : Started DockerBootApplication in 1.888 seconds (JVM running for 2.266)
+2022-06-18 04:55:23.282  INFO 1 --- [http-nio-8082-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2022-06-18 04:55:23.282  INFO 1 --- [http-nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2022-06-18 04:55:23.283  INFO 1 --- [http-nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+```
+
+
+
+
+
+
+
+
+
+# Docker网络
+
+## 命令
+
+
+
+所有命令：
+
+```sh
+PS C:\Users\mao\Desktop\test> docker network --help
+
+Usage:  docker network COMMAND
+
+Manage networks
+
+Commands:
+  connect     Connect a container to a network
+  create      Create a network
+  disconnect  Disconnect a container from a network
+  inspect     Display detailed information on one or more networks
+  ls          List networks
+  prune       Remove all unused networks
+  rm          Remove one or more networks
+
+Run 'docker network COMMAND --help' for more information on a command.
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+### 查看网络
+
+```sh
+docker network ls
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+e26ce6e77409   bridge    bridge    local
+58028068163e   host      host      local
+c0e15a3d2248   none      null      local
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+### 查看网络源数据
+
+```sh
+docker network inspect 网络名字
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker network inspect bridge
+[
+    {
+        "Name": "bridge",
+        "Id": "e26ce6e774096478217bfed7fabc0eecfd79286ac7d640037e3c3874440cd4a5",
+        "Created": "2022-06-18T04:22:16.059751393Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {
+            "com.docker.network.bridge.default_bridge": "true",
+            "com.docker.network.bridge.enable_icc": "true",
+            "com.docker.network.bridge.enable_ip_masquerade": "true",
+            "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            "com.docker.network.bridge.name": "docker0",
+            "com.docker.network.driver.mtu": "1500"
+        },
+        "Labels": {}
+    }
+]
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+### 新建网络
+
+```sh 
+docker network create 网络名字
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker network create abc
+619d44f4afea6b7aca982a0ecdc36bf69d097d66fdf5f41004c1d16dbeb8839c
+```
+
+```sh
+PS C:\Users\mao\Desktop\test> docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+619d44f4afea   abc       bridge    local
+e26ce6e77409   bridge    bridge    local
+58028068163e   host      host      local
+c0e15a3d2248   none      null      local
+PS C:\Users\mao\Desktop\test>
+
+```
+
+
+
+### 删除网络
+
+```sh
+docker network rm 网络名字
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker network rm abc
+abc
+PS C:\Users\mao\Desktop\test> docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+e26ce6e77409   bridge    bridge    local
+58028068163e   host      host      local
+c0e15a3d2248   none      null      local
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+### prune
+
+删除所有未使用的网络
+
+```sh
+docker network prune
+```
+
+
+
+
+
+## 网络模式
+
+### bridge
 
