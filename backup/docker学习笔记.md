@@ -3333,3 +3333,271 @@ docker network prune
 
 ### bridge
 
+Docker 服务默认会创建一个 docker0 网桥，其上有一个 docker0 内部接口，该桥接网络的名称为docker0，它在内核层连通了其他的物理或虚拟网卡，这就将所有容器和本地主机都放到同一个物理网络。Docker 默认指定了 docker0 接口 的 IP 地址和子网掩码，让主机和容器之间可以通过网桥相互通信。
+
+
+
+1. Docker使用Linux桥接，在宿主机虚拟一个Docker容器网桥(docker0)，Docker启动一个容器时会根据Docker网桥的网段分配给容器一个IP地址，称为Container-IP，同时Docker网桥是每个容器的默认网关。因为在同一宿主机内的容器都接入同一个网桥，这样容器之间就能够通过容器的Container-IP直接通信。
+
+2. docker run 的时候，没有指定network的话默认使用的网桥模式就是bridge，使用的就是docker0。在宿主机ifconfig,就可以看到docker0和自己create的network(后面讲)eth0，eth1，eth2……代表网卡一，网卡二，网卡三……，lo代表127.0.0.1，即localhost，inet addr用来表示网卡的IP地址
+
+3. 网桥docker0创建一对对等虚拟设备接口一个叫veth，另一个叫eth0，成对匹配。
+
+   * 整个宿主机的网桥模式都是docker0，类似一个交换机有一堆接口，每个接口叫veth，在本地主机和容器内分别创建一个虚拟接口，并让他们彼此联通。这样一对接口叫veth pair
+
+   * 每个容器实例内部也有一块网卡，每个接口叫eth0
+   * docker0上面的每个veth匹配某个容器实例内部的eth0，两两配对，一一匹配
+
+
+
+
+
+### host
+
+host，直接使用宿主机的 IP 地址与外界进行通信，不再需要额外进行NAT 转换。
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker network inspect host
+[
+    {
+        "Name": "host",
+        "Id": "58028068163e97bb12cd7f24921cccfd49ca06286f756e82b34d7a73494a562b",
+        "Created": "2022-05-02T11:06:10.406162704Z",
+        "Scope": "local",
+        "Driver": "host",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": []
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+### none
+
+在none模式下，并不为Docker容器进行任何网络配置。 
+
+也就是说，这个Docker容器没有网卡、IP、路由等信息，只有一个lo
+
+需要我们自己为Docker容器添加网卡、配置IP等。
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker network inspect none
+[
+    {
+        "Name": "none",
+        "Id": "c0e15a3d224806a9b9df4a1558048e744ccd81dfb2b82d93ef82a0426997ae69",
+        "Created": "2022-05-02T11:06:10.394932679Z",
+        "Scope": "local",
+        "Driver": "null",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": []
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+### container
+
+新建的容器和已经存在的一个容器共享一个网络ip配置而不是和宿主机共享。新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围等。同样，两个容器除了网络方面，其他的如文件系统、进程列表等还是隔离的。
+
+
+
+使用：
+
+```sh
+docker run -it --network container:被共享的容器名 ...
+```
+
+
+
+
+
+### 自定义网络
+
+创建网络：
+
+```sh
+docker network create 网络名字
+```
+
+
+
+自定义网络本身就维护好了主机名和ip的对应关系（ip和域名都能通）
+
+
+
+
+
+## 平台架构
+
+Docker 是一个 C/S 模式的架构，后端是一个松耦合架构，众多模块各司其职。
+
+Docker 运行的基本流程：
+
+1. 用户是使用 Docker Client 与 Docker Daemon 建立通信，并发送请求给后者。
+
+2. Docker Daemon 作为 Docker 架构中的主体部分，首先提供 Docker Server 的功能使其可以接受 Docker Client 的请求。
+
+3. Docker Engine 执行 Docker 内部的一系列工作，每一项工作都是以一个 Job 的形式的存在。
+
+4. Job 的运行过程中，当需要容器镜像时，则从 Docker Registry 中下载镜像，并通过镜像管理驱动 Graph driver将下载镜像以Graph的形式存储。
+
+5. 当需要为 Docker 创建网络环境时，通过网络管理驱动 Network driver 创建并配置 Docker 容器网络环境。
+
+6. 当需要限制 Docker 容器运行资源或执行用户指令等操作时，则通过 Execdriver 来完成。
+
+7. Libcontainer是一项独立的容器管理包，Network driver以及Exec driver都是通过Libcontainer来实现具体对容器进行的操作。
+
+
+
+
+
+
+
+# Docker-compose 容器编排
+
+## 是什么？
+
+Compose 是 Docker 公司推出的一个工具软件，可以管理多个 Docker 容器组成一个应用。你需要定义一个 YAML 格式的配置文件docker-compose.yml，写好多个容器之间的调用关系。然后，只要一个命令，就能同时启动/关闭这些容器
+
+docker建议我们每一个容器中只运行一个服务,因为docker容器本身占用资源极少,所以最好是将每个服务单独的分割开来但是这样我们又面临了一个问题？
+
+如果我需要同时部署好多个服务,难道要每个服务单独写Dockerfile然后在构建镜像,构建容器,这样累都累死了,所以docker官方给我们提供了docker-compose多服务部署的工具
+
+例如要实现一个Web微服务项目，除了Web服务容器本身，往往还需要再加上后端的数据库mysql服务容器，redis服务器，注册中心eureka，甚至还包括负载均衡容器等等
+
+Compose允许用户通过一个单独的docker-compose.yml模板文件（YAML 格式）来定义一组相关联的应用容器为一个项目（project）
+
+可以很容易地用一个配置文件定义一个多容器的应用，然后使用一条指令安装这个应用的所有依赖，完成构建。Docker-Compose 解决了容器与容器之间如何管理编排的问题。
+
+
+
+## 下载
+
+https://docs.docker.com/compose/install/
+
+
+
+[安装 Docker Compose CLI 插件|Docker 文档](https://docs.docker.com/compose/install/compose-plugin/#install-compose-on-windows-server)
+
+
+
+| **Compose file format** | **Docker Engine release** |
+| :---------------------- | :------------------------ |
+| Compose specification   | 19.03.0+                  |
+| 3.8                     | 19.03.0+                  |
+| 3.7                     | 18.06.0+                  |
+| 3.6                     | 18.02.0+                  |
+| 3.5                     | 17.12.0+                  |
+| 3.4                     | 17.09.0+                  |
+| 3.3                     | 17.06.0+                  |
+| 3.2                     | 17.04.0+                  |
+| 3.1                     | 1.13.1+                   |
+| 3.0                     | 1.13.0+                   |
+| 2.4                     | 17.12.0+                  |
+| 2.3                     | 17.06.0+                  |
+| 2.2                     | 1.13.0+                   |
+| 2.1                     | 1.12.0+                   |
+| 2.0                     | 1.10.0+                   |
+
+
+
+GitHub 现在需要 TLS1.2。在 PowerShell 中，运行以下命令
+
+```sh
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+```
+
+
+
+运行以下命令，下载最新版本的 Compose
+
+```sh
+ Invoke-WebRequest "https://github.com/docker/compose/releases/download/v2.6.0/docker-compose-Windows-x86_64.exe" -UseBasicParsing -OutFile $Env:ProgramFiles\Docker\docker-compose.exe
+```
+
+
+
+查看是否安装成功：
+
+
+
+```sh
+docker-compose --version
+```
+
+
+
+```sh
+PS C:\WINDOWS\system32> docker-compose --version
+docker-compose version 1.29.2, build 5becea4c
+PS C:\WINDOWS\system32>
+```
+
+
+
+
+
+## 概念
+
+* 一个文件：docker-compose.yml
+
+* 服务：一个个应用容器实例，比如订单微服务、库存微服务、mysql容器、nginx容器或者redis容器
+* 工程：由一组关联的应用容器组成的一个完整业务单元，在docker-compose.yml 文件中定义。
+
+
+
+
+
+## 步骤
+
+1. 编写Dockerfile定义各个微服务应用并构建出对应的镜像文件
+2. 使用 docker-compose.yml定义一个完整业务单元，安排好整体应用中的各个容器服务。
+3. 最后，执行docker-compose up命令来启动并运行整个应用程序，完成一键部署上线
+
+
+
+
+
+## 常用命令
+

@@ -3601,3 +3601,2375 @@ PS C:\WINDOWS\system32>
 
 ## 常用命令
 
+### 帮助
+
+```sh
+docker-compose -h
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker-compose -h
+Define and run multi-container applications with Docker.
+
+Usage:
+  docker-compose [-f <arg>...] [--profile <name>...] [options] [--] [COMMAND] [ARGS...]
+  docker-compose -h|--help
+
+Options:
+  -f, --file FILE             Specify an alternate compose file
+                              (default: docker-compose.yml)
+  -p, --project-name NAME     Specify an alternate project name
+                              (default: directory name)
+  --profile NAME              Specify a profile to enable
+  -c, --context NAME          Specify a context name
+  --verbose                   Show more output
+  --log-level LEVEL           Set log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  --ansi (never|always|auto)  Control when to print ANSI control characters
+  --no-ansi                   Do not print ANSI control characters (DEPRECATED)
+  -v, --version               Print version and exit
+  -H, --host HOST             Daemon socket to connect to
+
+  --tls                       Use TLS; implied by --tlsverify
+  --tlscacert CA_PATH         Trust certs signed only by this CA
+  --tlscert CLIENT_CERT_PATH  Path to TLS certificate file
+  --tlskey TLS_KEY_PATH       Path to TLS key file
+  --tlsverify                 Use TLS and verify the remote
+  --skip-hostname-check       Don't check the daemon's hostname against the
+                              name specified in the client certificate
+  --project-directory PATH    Specify an alternate working directory
+                              (default: the path of the Compose file)
+  --compatibility             If set, Compose will attempt to convert keys
+                              in v3 files to their non-Swarm equivalent (DEPRECATED)
+  --env-file PATH             Specify an alternate environment file
+
+Commands:
+  build              Build or rebuild services
+  config             Validate and view the Compose file
+  create             Create services
+  down               Stop and remove resources
+  events             Receive real time events from containers
+  exec               Execute a command in a running container
+  help               Get help on a command
+  images             List images
+  kill               Kill containers
+  logs               View output from containers
+  pause              Pause services
+  port               Print the public port for a port binding
+  ps                 List containers
+  pull               Pull service images
+  push               Push service images
+  restart            Restart services
+  rm                 Remove stopped containers
+  run                Run a one-off command
+  scale              Set number of containers for a service
+  start              Start services
+  stop               Stop services
+  top                Display the running processes
+  unpause            Unpause services
+  up                 Create and start containers
+  version            Show version information and quit
+
+
+Docker Compose is now in the Docker CLI, try `docker compose`
+PS C:\Users\mao\Desktop>
+```
+
+
+
+### 启动服务
+
+启动所有docker-compose服务
+
+```sh
+docker-compose up
+```
+
+
+
+启动所有docker-compose服务并后台运行
+
+```sh
+docker-compose up -d
+```
+
+
+
+
+
+### 停止并删除
+
+停止并删除容器、网络、卷、镜像
+
+```sh
+docker-compose down
+```
+
+
+
+### 进入容器实例内部
+
+```sh
+docker-compose exec  yml文件里面的服务id
+```
+
+相当于
+
+```sh
+docker-compose exec docker-compose.yml文件中写的服务id /bin/bash
+```
+
+
+
+### 展示编排过的容器
+
+展示当前docker-compose编排过的运行的所有容器
+
+```sh
+docker-compose ps 
+```
+
+
+
+### 展示编排过的容器进程
+
+```sh
+docker-compose top
+```
+
+
+
+### 查看容器输出日志
+
+```sh
+docker-compose logs  yml文件里面的服务id
+```
+
+
+
+### 检查配置
+
+```sh
+docker-compose config
+```
+
+
+
+### 静默检查配置
+
+```sh
+docker-compose config -q
+```
+
+
+
+### 重启服务
+
+```sh
+docker-compose restart
+```
+
+
+
+### 启动服务
+
+```sh
+docker-compose start
+```
+
+
+
+### 停止服务
+
+```sh
+docker-compose stop
+```
+
+
+
+
+
+
+
+## 示例
+
+### 创建springboot项目
+
+项目名称为Docker_compose_boot
+
+
+
+### maven
+
+maven的pom.xml文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>mao</groupId>
+    <artifactId>Docker_compose_boot</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Docker_compose_boot</name>
+    <description>Docker_compose_boot</description>
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--mysql依赖 spring-boot-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--spring-boot druid连接池依赖-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>1.2.8</version>
+        </dependency>
+        <!--spring boot redis 依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!--spring-boot 开发者工具 主要用于热部署-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!--spring-boot mybatis-plus依赖-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+        <!--mybatis-plus代码生成器-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+        <!-- 模板引擎 默认 -->
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <!--swagger-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+```
+
+
+
+
+
+### 配置
+
+application.yml文件：
+
+```yaml
+
+#多环境开发---单文件
+spring:
+  profiles:
+    # 当前环境
+    active: dev
+
+#-----通用环境---------------------------------------------------------
+
+  # 导入jdbc.properties文件
+  # 导入redis配置文件
+  config:
+    import: classpath:jdbc.properties,classpath:redis.properties
+
+
+  #spring-mvc配置
+  mvc:
+    # 视图解析器
+    view:
+      prefix:
+      suffix: .html
+
+
+
+server:
+  #配置端口号
+  port: 8080
+
+
+
+
+---
+#------开发环境--------------------------------------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # 配置数据源
+  datasource:
+    # driver-class-name: ${jdbc.driver}
+    # url: ${jdbc.url}
+    # username: ${jdbc.username}
+    # password: ${jdbc.password}
+    # 配置数据源-druid
+    druid:
+      driver-class-name: ${jdbc.driver}
+      url: ${jdbc.url}
+      username: ${jdbc.username}
+      password: ${jdbc.password}
+
+
+
+
+  # 关于redis
+  redis:
+    host: ${redis.host} # "127.0.0.1"
+    port: ${redis.port}  # 6379
+    password: ${redis.password} # "123456"
+    jedis:
+      pool:
+        # 连接池开关
+        enabled: true
+        # 在给定时间可以分配的最大连接数
+        max-active: ${max-active}  # 8
+        #池中“空闲”连接的最大数量。使用负值表示无限数量的空闲连接。
+        max-idle: ${max-idle} #  8
+        # 当池耗尽时，连接分配在抛出异常之前应该阻塞的最长时间
+        max-wait: ${max-wait}  # 2000
+
+
+
+
+
+  # 关于热部署
+  devtools:
+    restart:
+      # 热部署开关
+      enabled: true
+      # 自定义不参与重启排除项
+      exclude: public/**,static/**
+
+
+
+
+# 开启debug模式，输出调试信息，常用于检查系统运行状况
+#debug: true
+
+# 设置日志级别，root表示根节点，即整体应用日志级别
+logging:
+ # 日志输出到文件的文件名
+  file:
+     name: server.log
+  # 字符集
+  charset:
+    file: UTF-8
+  # 分文件
+  logback:
+    rollingpolicy:
+      #最大文件大小
+      max-file-size: 16KB
+      # 文件格式
+      file-name-pattern: server_log-%d{yyyy/MM月/dd日/}%i.log
+  # 设置日志组
+  group:
+  # 自定义组名，设置当前组中所包含的包
+    mao_pro: mao
+  level:
+    root: info
+    # 为对应组设置日志级别
+    mao_pro: debug
+    # 日志输出格式
+# pattern:
+  # console: "%d %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
+
+
+
+
+---
+#----生产环境----------------------------------------------------
+
+
+spring:
+  config:
+    activate:
+      on-profile: pro
+
+
+
+# 开启debug模式，输出调试信息，常用于检查系统运行状况
+#debug: true
+
+# 设置日志级别，root表示根节点，即整体应用日志级别
+logging:
+  # 日志输出到文件的文件名
+  file:
+    name: server.log
+  # 字符集
+  charset:
+    file: UTF-8
+  # 分文件
+  logback:
+    rollingpolicy:
+      #最大文件大小
+      max-file-size: 4MB
+      # 文件格式
+      file-name-pattern: server_log-%d{yyyy/MM月/dd日/}%i.log
+  # 设置日志组
+  group:
+    # 自定义组名，设置当前组中所包含的包
+    mao_pro: mao
+  level:
+    root: info
+    # 为对应组设置日志级别
+    mao_pro: warn
+    # 日志输出格式
+  # pattern:
+  # console: "%d %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
+
+
+
+
+
+---
+#----测试环境-----------------------------------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+
+
+```
+
+
+
+
+
+### 业务类
+
+```java
+package mao.docker_compose_boot.controller;
+
+
+import mao.docker_compose_boot.entity.Student;
+import mao.docker_compose_boot.service.IStudentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author mao
+ * @since 2022-06-19
+ */
+
+@RequestMapping("/student")
+@RestController()
+public class StudentController
+{
+
+    @Autowired
+    private IStudentService studentService;
+
+    @GetMapping("")
+    public List<Student> getAll()
+    {
+        return studentService.list();
+    }
+
+    @GetMapping("/{id}")
+    public Student getStudent(@PathVariable Long id)
+    {
+        return studentService.getStudent(id);
+    }
+
+}
+
+
+```
+
+
+
+```java
+package mao.docker_compose_boot.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
+import java.io.Serializable;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author mao
+ * @since 2022 -06-19
+ */
+@ApiModel(value = "Student对象", description = "")
+public class Student implements Serializable
+{
+
+    private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty("学生学号")
+    @TableId(value = "student_no", type = IdType.AUTO)
+    private Long studentNo;
+
+    @ApiModelProperty("学生姓名")
+    private String name;
+
+    @ApiModelProperty("学生性别")
+    private String sex;
+
+    @ApiModelProperty("电话号码")
+    private String telephoneNumber;
+
+    @ApiModelProperty("家庭电话号码")
+    private String familyTelephoneNumber;
+
+    @ApiModelProperty("生日信息，由程序填充，这里用varchar型")
+    private String birthday;
+
+    @ApiModelProperty("家庭地址")
+    private String address;
+
+    @ApiModelProperty("身份证号码")
+    private String idCard;
+
+    @ApiModelProperty("电子邮箱")
+    private String email;
+
+    @ApiModelProperty("寝室号")
+    private String dormitoryNumber;
+
+    @ApiModelProperty("所属班级编号")
+    private Long classNo;
+
+    @ApiModelProperty("状态，在读、退学或者毕业")
+    private String state;
+
+    @ApiModelProperty("备注")
+    private String remarks;
+
+
+    /**
+     * Gets student no.
+     *
+     * @return the student no
+     */
+    public Long getStudentNo()
+    {
+        return studentNo;
+    }
+
+    /**
+     * Sets student no.
+     *
+     * @param studentNo the student no
+     */
+    public void setStudentNo(Long studentNo)
+    {
+        this.studentNo = studentNo;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets sex.
+     *
+     * @return the sex
+     */
+    public String getSex()
+    {
+        return sex;
+    }
+
+    /**
+     * Sets sex.
+     *
+     * @param sex the sex
+     */
+    public void setSex(String sex)
+    {
+        this.sex = sex;
+    }
+
+    /**
+     * Gets telephone number.
+     *
+     * @return the telephone number
+     */
+    public String getTelephoneNumber()
+    {
+        return telephoneNumber;
+    }
+
+    /**
+     * Sets telephone number.
+     *
+     * @param telephoneNumber the telephone number
+     */
+    public void setTelephoneNumber(String telephoneNumber)
+    {
+        this.telephoneNumber = telephoneNumber;
+    }
+
+    /**
+     * Gets family telephone number.
+     *
+     * @return the family telephone number
+     */
+    public String getFamilyTelephoneNumber()
+    {
+        return familyTelephoneNumber;
+    }
+
+    /**
+     * Sets family telephone number.
+     *
+     * @param familyTelephoneNumber the family telephone number
+     */
+    public void setFamilyTelephoneNumber(String familyTelephoneNumber)
+    {
+        this.familyTelephoneNumber = familyTelephoneNumber;
+    }
+
+    /**
+     * Gets birthday.
+     *
+     * @return the birthday
+     */
+    public String getBirthday()
+    {
+        return birthday;
+    }
+
+    /**
+     * Sets birthday.
+     *
+     * @param birthday the birthday
+     */
+    public void setBirthday(String birthday)
+    {
+        this.birthday = birthday;
+    }
+
+    /**
+     * Gets address.
+     *
+     * @return the address
+     */
+    public String getAddress()
+    {
+        return address;
+    }
+
+    /**
+     * Sets address.
+     *
+     * @param address the address
+     */
+    public void setAddress(String address)
+    {
+        this.address = address;
+    }
+
+    /**
+     * Gets id card.
+     *
+     * @return the id card
+     */
+    public String getIdCard()
+    {
+        return idCard;
+    }
+
+    /**
+     * Sets id card.
+     *
+     * @param idCard the id card
+     */
+    public void setIdCard(String idCard)
+    {
+        this.idCard = idCard;
+    }
+
+    /**
+     * Gets email.
+     *
+     * @return the email
+     */
+    public String getEmail()
+    {
+        return email;
+    }
+
+    /**
+     * Sets email.
+     *
+     * @param email the email
+     */
+    public void setEmail(String email)
+    {
+        this.email = email;
+    }
+
+    /**
+     * Gets dormitory number.
+     *
+     * @return the dormitory number
+     */
+    public String getDormitoryNumber()
+    {
+        return dormitoryNumber;
+    }
+
+    /**
+     * Sets dormitory number.
+     *
+     * @param dormitoryNumber the dormitory number
+     */
+    public void setDormitoryNumber(String dormitoryNumber)
+    {
+        this.dormitoryNumber = dormitoryNumber;
+    }
+
+    /**
+     * Gets class no.
+     *
+     * @return the class no
+     */
+    public Long getClassNo()
+    {
+        return classNo;
+    }
+
+    /**
+     * Sets class no.
+     *
+     * @param classNo the class no
+     */
+    public void setClassNo(Long classNo)
+    {
+        this.classNo = classNo;
+    }
+
+    /**
+     * Gets state.
+     *
+     * @return the state
+     */
+    public String getState()
+    {
+        return state;
+    }
+
+    /**
+     * Sets state.
+     *
+     * @param state the state
+     */
+    public void setState(String state)
+    {
+        this.state = state;
+    }
+
+    /**
+     * Gets remarks.
+     *
+     * @return the remarks
+     */
+    public String getRemarks()
+    {
+        return remarks;
+    }
+
+    /**
+     * Sets remarks.
+     *
+     * @param remarks the remarks
+     */
+    public void setRemarks(String remarks)
+    {
+        this.remarks = remarks;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("studentNo：").append(studentNo).append('\n');
+        stringbuilder.append("name：").append(name).append('\n');
+        stringbuilder.append("sex：").append(sex).append('\n');
+        stringbuilder.append("telephoneNumber：").append(telephoneNumber).append('\n');
+        stringbuilder.append("familyTelephoneNumber：").append(familyTelephoneNumber).append('\n');
+        stringbuilder.append("birthday：").append(birthday).append('\n');
+        stringbuilder.append("address：").append(address).append('\n');
+        stringbuilder.append("idCard：").append(idCard).append('\n');
+        stringbuilder.append("email：").append(email).append('\n');
+        stringbuilder.append("dormitoryNumber：").append(dormitoryNumber).append('\n');
+        stringbuilder.append("classNo：").append(classNo).append('\n');
+        stringbuilder.append("state：").append(state).append('\n');
+        stringbuilder.append("remarks：").append(remarks).append('\n');
+        return stringbuilder.toString();
+    }
+}
+
+```
+
+
+
+
+
+```java
+package mao.docker_compose_boot.mapper;
+
+import mao.docker_compose_boot.entity.Student;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * <p>
+ * Mapper 接口
+ * </p>
+ *
+ * @author mao
+ * @since 2022-06-19
+ */
+
+@Mapper
+public interface StudentMapper extends BaseMapper<Student>
+{
+
+}
+
+```
+
+
+
+
+
+```java
+package mao.docker_compose_boot.service;
+
+import mao.docker_compose_boot.entity.Student;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+/**
+ * <p>
+ * 服务类
+ * </p>
+ *
+ * @author mao
+ * @since 2022-06-19
+ */
+public interface IStudentService extends IService<Student>
+{
+
+    /**
+     * 获得学生信息
+     *
+     * @param id 学生的学号，（no）
+     * @return Student
+     */
+    Student getStudent(Long id);
+}
+
+```
+
+
+
+
+
+```java
+package mao.docker_compose_boot.service.impl;
+
+import mao.docker_compose_boot.entity.Student;
+import mao.docker_compose_boot.mapper.StudentMapper;
+import mao.docker_compose_boot.service.IStudentService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import mao.docker_compose_boot.utils.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author mao
+ * @since 2022-06-19
+ */
+@Service
+public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> implements IStudentService
+{
+
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @Override
+    public Student getStudent(Long id)
+    {
+        return redisUtils.query("docker_compose_boot:student:", "docker_compose_boot:lock:",
+                id, Student.class, this::getById,
+                300L, TimeUnit.SECONDS, 50);
+    }
+}
+
+```
+
+
+
+
+
+```java
+package mao.docker_compose_boot.utils;
+
+import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.convert.RedisData;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+/**
+ * Project name(项目名称)：Docker_compose_boot
+ * Package(包名): mao.docker_compose_boot.utils
+ * Class(类名): RedisUtils
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/6/19
+ * Time(创建时间)： 13:25
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+@Component
+public class RedisUtils
+{
+
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
+
+    private static final Logger log = LoggerFactory.getLogger(RedisUtils.class);
+
+    //线程池
+    private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
+
+    /**
+     * 向redis里添加数据
+     *
+     * @param redisKey   redis的key
+     * @param value      数据
+     * @param expireTime 过期时间
+     * @param timeUnit   时间单位
+     */
+    public void set(String redisKey, Object value, Long expireTime, TimeUnit timeUnit)
+    {
+        stringRedisTemplate.opsForValue().set(redisKey, JSONUtil.toJsonStr(value), expireTime, timeUnit);
+    }
+
+
+//    /**
+//     * 向redis里添加数据 设置逻辑过期
+//     *
+//     * @param redisKey   redis的key
+//     * @param value      数据
+//     * @param expireTime 过期时间
+//     * @param timeUnit   时间单位
+//     */
+//    public void setWithLogicalExpire(String redisKey, Object value, Long expireTime, TimeUnit timeUnit)
+//    {
+//        RedisData redisData = new RedisData();
+//        //添加数据
+//        redisData.setData(value);
+//        //设置过期时间
+//        redisData.setExpireTime(LocalDateTime.now().plusSeconds(timeUnit.toSeconds(expireTime)));
+//        //放入redis
+//        stringRedisTemplate.opsForValue().set(redisKey, JSONUtil.toJsonStr(redisData));
+//    }
+
+
+    /**
+     * 查询数据，有缓存，解决缓存穿透问题，未解决缓存雪崩问题
+     *
+     * @param keyPrefix  redisKey的前缀
+     * @param id         id
+     * @param type       返回值的类型
+     * @param dbFallback 查询数据库的函数
+     * @param expireTime 过期时间
+     * @param timeUnit   时间单位
+     * @param <R>        返回值的类型
+     * @param <ID>       id的类型
+     * @return 泛型R
+     */
+    public <R, ID> R queryWithPassThrough(String keyPrefix, ID id, Class<R> type,
+                                          Function<ID, R> dbFallback, Long expireTime, TimeUnit timeUnit)
+    {
+        //获得前缀
+        String redisKey = keyPrefix + id;
+        //查询redis
+        String json = stringRedisTemplate.opsForValue().get(redisKey);
+        //判断是否为空
+        if (StrUtil.isNotBlank(json))
+        {
+            //不为空，返回
+            return JSONUtil.toBean(json, type);
+        }
+        //判断是否为空串
+        if (json != null)
+        {
+            //空串
+            return null;
+        }
+        //null
+        //查数据库
+        R r = dbFallback.apply(id);
+        //判断
+        if (r == null)
+        {
+            //数据库也为空，缓存空值
+            this.set(redisKey, "", expireTime, timeUnit);
+            return null;
+        }
+        //数据库存在，写入redis
+        this.set(redisKey, r, expireTime, timeUnit);
+        //返回
+        return r;
+    }
+
+    /**
+     * 查询数据，有缓存，解决缓存穿透问题，解决缓存雪崩问题
+     *
+     * @param keyPrefix                      redisKey的前缀
+     * @param id                             id
+     * @param type                           返回值的类型
+     * @param dbFallback                     查询数据库的函数
+     * @param expireTime                     过期时间
+     * @param timeUnit                       时间单位
+     * @param <R>                            返回值的类型
+     * @param <ID>                           id的类型
+     * @param maxTimeSecondsByCacheAvalanche this.set(redisKey, r,
+     *                                       timeUnit.toSeconds(expireTime)+getIntRandom(0,maxTimeSecondsByCacheAvalanche), TimeUnit.SECONDS);
+     * @return 泛型R
+     */
+    public <R, ID> R queryWithPassThroughAndCacheAvalanche(String keyPrefix, ID id, Class<R> type,
+                                                           Function<ID, R> dbFallback, Long expireTime, TimeUnit timeUnit,
+                                                           Integer maxTimeSecondsByCacheAvalanche)
+    {
+        //获得前缀
+        String redisKey = keyPrefix + id;
+        //查询redis
+        String json = stringRedisTemplate.opsForValue().get(redisKey);
+        //判断是否为空
+        if (StrUtil.isNotBlank(json))
+        {
+            //不为空，返回
+            return JSONUtil.toBean(json, type);
+        }
+        //判断是否为空串
+        if (json != null)
+        {
+            //空串
+            return null;
+        }
+        //null
+        //查数据库
+        R r = dbFallback.apply(id);
+        //判断
+        if (r == null)
+        {
+            //数据库也为空，缓存空值
+            this.set(redisKey, "",
+                    timeUnit.toSeconds(expireTime) + getIntRandom(0, maxTimeSecondsByCacheAvalanche),
+                    TimeUnit.SECONDS);
+            return null;
+        }
+        //数据库存在，写入redis
+        this.set(redisKey, r,
+                timeUnit.toSeconds(expireTime) + getIntRandom(0, maxTimeSecondsByCacheAvalanche),
+                TimeUnit.SECONDS);
+        //返回
+        return r;
+    }
+
+    /**
+     * 查询数据，解决缓存穿透，互斥锁方法解决缓存击穿，解决缓存雪崩
+     *
+     * @param keyPrefix                      redisKey的前缀
+     * @param lockKeyPrefix                  锁的前缀
+     * @param id                             id
+     * @param type                           返回值的类型
+     * @param dbFallback                     查询数据库的函数
+     * @param expireTime                     过期时间
+     * @param timeUnit                       时间单位
+     * @param <R>                            返回值的类型
+     * @param <ID>                           id的类型
+     * @param maxTimeSecondsByCacheAvalanche this.set(redisKey, r,
+     *                                       timeUnit.toSeconds(expireTime)+getIntRandom(0,maxTimeSecondsByCacheAvalanche), TimeUnit.SECONDS);
+     * @return 泛型R
+     */
+    public <R, ID> R query(String keyPrefix, String lockKeyPrefix, ID id, Class<R> type,
+                           Function<ID, R> dbFallback, Long expireTime, TimeUnit timeUnit,
+                           Integer maxTimeSecondsByCacheAvalanche)
+    {
+        //获取redisKey
+        String redisKey = keyPrefix + id;
+        //从redis中查询信息，根据id
+        String json = stringRedisTemplate.opsForValue().get(redisKey);
+        //判断取出的数据是否为空
+        if (StrUtil.isNotBlank(json))
+        {
+            //不是空，redis里有，返回
+            return JSONUtil.toBean(json, type);
+        }
+        //是空串，不是null，返回
+        if (json != null)
+        {
+            return null;
+        }
+        //锁的key
+        String lockKey = lockKeyPrefix + id;
+
+        R r = null;
+        try
+        {
+            //获取互斥锁
+            boolean lock = tryLock(lockKey);
+            //判断锁是否获取成功
+            if (!lock)
+            {
+                //没有获取到锁
+                //200毫秒后再次获取
+                Thread.sleep(200);
+                //递归调用
+                return query(keyPrefix, lockKeyPrefix, id, type, dbFallback,
+                        expireTime, timeUnit, maxTimeSecondsByCacheAvalanche);
+            }
+            //得到了锁
+            //null，查数据库
+            r = dbFallback.apply(id);
+            //判断数据库里的信息是否为空
+            if (r == null)
+            {
+                //数据库也为空，缓存空值
+                this.set(redisKey, "",
+                        timeUnit.toSeconds(expireTime) + getIntRandom(0, maxTimeSecondsByCacheAvalanche),
+                        TimeUnit.SECONDS);
+                return null;
+            }
+            //存在，回写到redis里，设置随机的过期时间
+            this.set(redisKey, r,
+                    timeUnit.toSeconds(expireTime) + getIntRandom(0, maxTimeSecondsByCacheAvalanche),
+                    TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            //释放锁
+            this.unlock(lockKey);
+        }
+        //返回数据
+        return r;
+    }
+
+    /**
+     * 更新数据
+     *
+     * @param id         要更新的主键
+     * @param data       要更新的对象
+     * @param keyPrefix  redis的key前缀
+     * @param dbFallback 更新数据库的函数，返回值要为Boolean类型
+     * @param <T>        要更新的对象的泛型
+     * @param <ID>       主键的类型
+     * @return boolean
+     */
+    public <T, ID> boolean update(ID id, T data, String keyPrefix, Function<T, Boolean> dbFallback)
+    {
+        //判断是否为空
+        if (id == null)
+        {
+            return false;
+        }
+        //不为空
+        //先更新数据库
+        boolean b = dbFallback.apply(data);
+        //更新失败，返回
+        if (!b)
+        {
+            return false;
+        }
+        //更新没有失败
+        //删除redis里的数据，下一次查询时自动添加进redis
+        //redisKey
+        String redisKey = keyPrefix + id;
+        stringRedisTemplate.delete(redisKey);
+        //返回响应
+        return true;
+    }
+
+//    /**
+//     * @param keyPrefix     redisKey的前缀
+//     * @param lockKeyPrefix 锁的前缀
+//     * @param id            id
+//     * @param type          返回值的类型
+//     * @param dbFallback    查询数据库的函数
+//     * @param time          过期时间
+//     * @param timeUnit      时间单位
+//     * @param <R>           返回值的类型
+//     * @param <ID>          id的类型
+//     * @return 泛型R
+//     */
+//    public <R, ID> R queryWithLogicalExpire(String keyPrefix, String lockKeyPrefix, ID id, Class<R> type,
+//                                            Function<ID, R> dbFallback, Long time, TimeUnit timeUnit)
+//    {
+//        //获得前缀
+//        String redisKey = keyPrefix + id;
+//        //查询redis
+//        String json = stringRedisTemplate.opsForValue().get(redisKey);
+//        //判断是否为空
+//        if (StrUtil.isBlank(json))
+//        {
+//            //空，返回
+//            return null;
+//        }
+//        //不为空
+//        //json 反序列化为对象
+//        RedisData redisData = JSONUtil.toBean(json, RedisData.class);
+//        //获得过期时间
+//        LocalDateTime expireTime = redisData.getExpireTime();
+//        //获取数据
+//        R r = JSONUtil.toBean((JSONObject) redisData.getData(), type);
+//        //判断是否过期
+//        if (expireTime.isAfter(LocalDateTime.now()))
+//        {
+//            //未过期，返回
+//            return r;
+//        }
+//        //过期，缓存重建
+//        //获取互斥锁
+//        String lockKey = lockKeyPrefix + id;
+//        boolean isLock = tryLock(lockKey);
+//        if (isLock)
+//        {
+//            //获取锁成功
+//            // 开辟独立线程
+//            CACHE_REBUILD_EXECUTOR.submit(new Runnable()
+//            {
+//                @Override
+//                public void run()
+//                {
+//                    try
+//                    {
+//                        R r1 = dbFallback.apply(id);
+//                        setWithLogicalExpire(redisKey, r1, time, timeUnit);
+//                    }
+//                    catch (Exception e)
+//                    {
+//                        throw new RuntimeException(e);
+//                    }
+//                    finally
+//                    {
+//                        //释放锁
+//                        unlock(lockKey);
+//                    }
+//                }
+//            });
+//        }
+//        //没有获取到锁，使用旧数据返回
+//        return r;
+//    }
+
+
+    /**
+     * 获取锁
+     *
+     * @param key redisKey
+     * @return 获取锁成功，返回true，否则返回false
+     */
+    private boolean tryLock(String key)
+    {
+        Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(key, "1",
+                20, TimeUnit.SECONDS);
+        return BooleanUtil.isTrue(result);
+    }
+
+    /**
+     * 释放锁
+     *
+     * @param key redisKey
+     */
+    private void unlock(String key)
+    {
+        stringRedisTemplate.delete(key);
+    }
+
+
+    /**
+     * 获取一个随机数，区间包含min和max
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return int 型的随机数
+     */
+    @SuppressWarnings("all")
+    private int getIntRandom(int min, int max)
+    {
+        if (min > max)
+        {
+            min = max;
+        }
+        return min + (int) (Math.random() * (max - min + 1));
+    }
+}
+
+```
+
+
+
+
+
+```java
+package mao.docker_compose_boot;
+
+import com.baomidou.mybatisplus.generator.FastAutoGenerator;
+import com.baomidou.mybatisplus.generator.config.OutputFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Properties;
+
+/**
+ * Project name(项目名称)：Docker_compose_boot
+ * Package(包名): mao.docker_compose_boot
+ * Class(类名): MybatisPlusSqlGenerator
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/6/19
+ * Time(创建时间)： 13:16
+ * Version(版本): 1.0
+ * Description(描述)：
+ */
+
+public class MybatisPlusSqlGenerator
+{
+    public static void main(String[] args) throws IOException
+    {
+        /*
+        //旧
+        // 1、创建代码生成器
+        AutoGenerator autoGenerator = new AutoGenerator();
+
+        // 2、全局配置
+        GlobalConfig globalConfig = new GlobalConfig();
+        String projectPath = System.getProperty("user.dir");
+        // 项目输出根目录
+        globalConfig.setOutputDir(projectPath + "/src/main/java");
+        // 作者
+        globalConfig.setAuthor("mao");
+        //生成后是否打开资源管理器
+        globalConfig.setOpen(false);
+        //去掉Service接口的首字母I
+        globalConfig.setServiceName("%sService");
+        //主键策略
+        globalConfig.setIdType(IdType.AUTO);
+        //开启Swagger2模式
+        globalConfig.setSwagger2(true);
+        autoGenerator.setGlobalConfig(globalConfig);
+
+        // 3、数据源配置
+        InputStream inputStream = MybatisPlusSqlGenerator.class.getClassLoader().getResourceAsStream("jdbc.properties");
+        Properties properties=new Properties();
+        properties.load(inputStream);
+        DataSourceConfig dataSourceConfig = new DataSourceConfig();
+        dataSourceConfig.setUrl(properties.getProperty("jdbc.url"));
+        dataSourceConfig.setDriverName(properties.getProperty("jdbc.driver"));
+        dataSourceConfig.setUsername(properties.getProperty("jdbc.username"));
+        dataSourceConfig.setPassword(properties.getProperty("jdbc.password"));
+        //设置方言
+        dataSourceConfig.setDbType(DbType.MYSQL);
+        autoGenerator.setDataSource(dataSourceConfig);
+
+        // 4、包配置
+        PackageConfig packageConfig = new PackageConfig();
+        // 生成的文件放在那个目录下  若没有该文件 则会创建
+        packageConfig.setParent("com.alibaba.product");
+        //此对象与数据库表结构一一对应，通过 DAO 层向上传输数据源对象。
+        packageConfig.setEntity("pojo.entity");
+        autoGenerator.setPackageInfo(packageConfig);
+
+        // 5、策略配置
+        StrategyConfig strategy = new StrategyConfig();
+        //数据库表映射到实体的命名策略
+        strategy.setNaming(NamingStrategy.underline_to_camel);
+        //数据库表字段映射到实体的命名策略
+        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
+        // lombok
+        strategy.setEntityLombokModel(false);
+        //逻辑删除字段名
+        strategy.setLogicDeleteFieldName("is_deleted");
+        //去掉布尔值的is_前缀（确保tinyint(1)）
+        strategy.setEntityBooleanColumnRemoveIsPrefix(true);
+        //restful api风格控制器
+        strategy.setRestControllerStyle(true);
+        autoGenerator.setStrategy(strategy);
+
+        // 6、执行
+        autoGenerator.execute();
+        */
+
+        //新
+        /*InputStream inputStream = MybatisPlusSqlGenerator.class.getClassLoader().getResourceAsStream("jdbc.properties");
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        FastAutoGenerator.create(properties.getProperty("jdbc.url"),
+                        properties.getProperty("jdbc.username"),
+                        properties.getProperty("jdbc.password"))
+                .globalConfig(builder ->
+                {
+                    builder.author("mao") // 设置作者
+                            .enableSwagger() // 开启 swagger 模式
+                            .fileOverride() // 覆盖已生成文件
+                            .outputDir("src\\main\\java"); // 指定输出目录
+                })
+                .packageConfig(builder ->
+                {
+                    builder.parent("mao.docker_compose_boot") // 设置父包名
+                            //.moduleName("system") // 设置父包模块名
+                            .pathInfo(Collections.singletonMap(OutputFile.mapperXml, "src\\main\\resources\\mapper")); // 设置mapperXml生成路径
+                })
+                .strategyConfig(builder ->
+                {
+                    builder.addInclude("student"); // 设置需要生成的表名
+                    //.addTablePrefix("t_", "c_"); // 设置过滤表前缀
+                })
+                //.templateEngine(new FreemarkerTemplateEngine()) // 使用Freemarker引擎模板，默认的是Velocity引擎模板
+                .execute();*/
+    }
+}
+
+```
+
+
+
+
+
+### 启动测试
+
+
+
+[localhost:8080/student/202012340112](http://localhost:8080/student/202012340112)
+
+[localhost:8080/student/202012340113](http://localhost:8080/student/202012340113)
+
+
+
+```sh
+C:\Users\mao\.jdks\openjdk-16.0.2\bin\java.exe -XX:TieredStopAtLevel=1 -noverify -Dspring.output.ansi.enabled=always "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2021.2.2\lib\idea_rt.jar=53775:C:\Program Files\JetBrains\IntelliJ IDEA 2021.2.2\bin" -Dcom.sun.management.jmxremote -Dspring.jmx.enabled=true -Dspring.liveBeansView.mbeanDomain -Dspring.application.admin.enabled=true -Dfile.encoding=UTF-8 -classpath H:\程序\大三下期\Docker_compose_boot\target\classes;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-web\2.7.0\spring-boot-starter-web-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter\2.7.0\spring-boot-starter-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-logging\2.7.0\spring-boot-starter-logging-2.7.0.jar;C:\Users\mao\.m2\repository\ch\qos\logback\logback-classic\1.2.11\logback-classic-1.2.11.jar;C:\Users\mao\.m2\repository\ch\qos\logback\logback-core\1.2.11\logback-core-1.2.11.jar;C:\Users\mao\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.17.2\log4j-to-slf4j-2.17.2.jar;C:\Users\mao\.m2\repository\org\apache\logging\log4j\log4j-api\2.17.2\log4j-api-2.17.2.jar;C:\Users\mao\.m2\repository\org\slf4j\jul-to-slf4j\1.7.36\jul-to-slf4j-1.7.36.jar;C:\Users\mao\.m2\repository\jakarta\annotation\jakarta.annotation-api\1.3.5\jakarta.annotation-api-1.3.5.jar;C:\Users\mao\.m2\repository\org\yaml\snakeyaml\1.30\snakeyaml-1.30.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-json\2.7.0\spring-boot-starter-json-2.7.0.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.13.3\jackson-databind-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.13.3\jackson-core-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.13.3\jackson-datatype-jdk8-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.13.3\jackson-datatype-jsr310-2.13.3.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\module\jackson-module-parameter-names\2.13.3\jackson-module-parameter-names-2.13.3.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\2.7.0\spring-boot-starter-tomcat-2.7.0.jar;C:\Users\mao\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\9.0.63\tomcat-embed-core-9.0.63.jar;C:\Users\mao\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\9.0.63\tomcat-embed-el-9.0.63.jar;C:\Users\mao\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\9.0.63\tomcat-embed-websocket-9.0.63.jar;C:\Users\mao\.m2\repository\org\springframework\spring-web\5.3.20\spring-web-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-beans\5.3.20\spring-beans-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-webmvc\5.3.20\spring-webmvc-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-aop\5.3.20\spring-aop-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-context\5.3.20\spring-context-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-expression\5.3.20\spring-expression-5.3.20.jar;C:\Users\mao\.m2\repository\mysql\mysql-connector-java\8.0.29\mysql-connector-java-8.0.29.jar;C:\Users\mao\.m2\repository\com\alibaba\druid-spring-boot-starter\1.2.8\druid-spring-boot-starter-1.2.8.jar;C:\Users\mao\.m2\repository\com\alibaba\druid\1.2.8\druid-1.2.8.jar;C:\Users\mao\.m2\repository\javax\annotation\javax.annotation-api\1.3.2\javax.annotation-api-1.3.2.jar;C:\Users\mao\.m2\repository\org\slf4j\slf4j-api\1.7.36\slf4j-api-1.7.36.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\2.7.0\spring-boot-autoconfigure-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-data-redis\2.7.0\spring-boot-starter-data-redis-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\data\spring-data-redis\2.7.0\spring-data-redis-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\data\spring-data-keyvalue\2.7.0\spring-data-keyvalue-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\data\spring-data-commons\2.7.0\spring-data-commons-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\spring-tx\5.3.20\spring-tx-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-oxm\5.3.20\spring-oxm-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-context-support\5.3.20\spring-context-support-5.3.20.jar;C:\Users\mao\.m2\repository\io\lettuce\lettuce-core\6.1.8.RELEASE\lettuce-core-6.1.8.RELEASE.jar;C:\Users\mao\.m2\repository\io\netty\netty-common\4.1.77.Final\netty-common-4.1.77.Final.jar;C:\Users\mao\.m2\repository\io\netty\netty-handler\4.1.77.Final\netty-handler-4.1.77.Final.jar;C:\Users\mao\.m2\repository\io\netty\netty-resolver\4.1.77.Final\netty-resolver-4.1.77.Final.jar;C:\Users\mao\.m2\repository\io\netty\netty-buffer\4.1.77.Final\netty-buffer-4.1.77.Final.jar;C:\Users\mao\.m2\repository\io\netty\netty-codec\4.1.77.Final\netty-codec-4.1.77.Final.jar;C:\Users\mao\.m2\repository\io\netty\netty-transport\4.1.77.Final\netty-transport-4.1.77.Final.jar;C:\Users\mao\.m2\repository\io\projectreactor\reactor-core\3.4.18\reactor-core-3.4.18.jar;C:\Users\mao\.m2\repository\org\reactivestreams\reactive-streams\1.0.3\reactive-streams-1.0.3.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-devtools\2.7.0\spring-boot-devtools-2.7.0.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot\2.7.0\spring-boot-2.7.0.jar;C:\Users\mao\.m2\repository\com\baomidou\mybatis-plus-boot-starter\3.5.1\mybatis-plus-boot-starter-3.5.1.jar;C:\Users\mao\.m2\repository\com\baomidou\mybatis-plus\3.5.1\mybatis-plus-3.5.1.jar;C:\Users\mao\.m2\repository\com\baomidou\mybatis-plus-extension\3.5.1\mybatis-plus-extension-3.5.1.jar;C:\Users\mao\.m2\repository\com\baomidou\mybatis-plus-core\3.5.1\mybatis-plus-core-3.5.1.jar;C:\Users\mao\.m2\repository\com\baomidou\mybatis-plus-annotation\3.5.1\mybatis-plus-annotation-3.5.1.jar;C:\Users\mao\.m2\repository\com\github\jsqlparser\jsqlparser\4.3\jsqlparser-4.3.jar;C:\Users\mao\.m2\repository\org\mybatis\mybatis\3.5.9\mybatis-3.5.9.jar;C:\Users\mao\.m2\repository\org\mybatis\mybatis-spring\2.0.6\mybatis-spring-2.0.6.jar;C:\Users\mao\.m2\repository\org\springframework\boot\spring-boot-starter-jdbc\2.7.0\spring-boot-starter-jdbc-2.7.0.jar;C:\Users\mao\.m2\repository\com\zaxxer\HikariCP\4.0.3\HikariCP-4.0.3.jar;C:\Users\mao\.m2\repository\org\springframework\spring-jdbc\5.3.20\spring-jdbc-5.3.20.jar;C:\Users\mao\.m2\repository\com\baomidou\mybatis-plus-generator\3.5.1\mybatis-plus-generator-3.5.1.jar;C:\Users\mao\.m2\repository\org\apache\velocity\velocity-engine-core\2.3\velocity-engine-core-2.3.jar;C:\Users\mao\.m2\repository\org\apache\commons\commons-lang3\3.12.0\commons-lang3-3.12.0.jar;C:\Users\mao\.m2\repository\io\springfox\springfox-swagger2\2.7.0\springfox-swagger2-2.7.0.jar;C:\Users\mao\.m2\repository\io\swagger\swagger-annotations\1.5.13\swagger-annotations-1.5.13.jar;C:\Users\mao\.m2\repository\io\swagger\swagger-models\1.5.13\swagger-models-1.5.13.jar;C:\Users\mao\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.13.3\jackson-annotations-2.13.3.jar;C:\Users\mao\.m2\repository\io\springfox\springfox-spi\2.7.0\springfox-spi-2.7.0.jar;C:\Users\mao\.m2\repository\io\springfox\springfox-core\2.7.0\springfox-core-2.7.0.jar;C:\Users\mao\.m2\repository\io\springfox\springfox-schema\2.7.0\springfox-schema-2.7.0.jar;C:\Users\mao\.m2\repository\io\springfox\springfox-swagger-common\2.7.0\springfox-swagger-common-2.7.0.jar;C:\Users\mao\.m2\repository\io\springfox\springfox-spring-web\2.7.0\springfox-spring-web-2.7.0.jar;C:\Users\mao\.m2\repository\org\reflections\reflections\0.9.11\reflections-0.9.11.jar;C:\Users\mao\.m2\repository\org\javassist\javassist\3.21.0-GA\javassist-3.21.0-GA.jar;C:\Users\mao\.m2\repository\com\google\guava\guava\18.0\guava-18.0.jar;C:\Users\mao\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\mao\.m2\repository\org\springframework\plugin\spring-plugin-core\1.2.0.RELEASE\spring-plugin-core-1.2.0.RELEASE.jar;C:\Users\mao\.m2\repository\org\springframework\plugin\spring-plugin-metadata\1.2.0.RELEASE\spring-plugin-metadata-1.2.0.RELEASE.jar;C:\Users\mao\.m2\repository\org\mapstruct\mapstruct\1.1.0.Final\mapstruct-1.1.0.Final.jar;C:\Users\mao\.m2\repository\cn\hutool\hutool-all\5.8.0\hutool-all-5.8.0.jar;C:\Users\mao\.m2\repository\net\bytebuddy\byte-buddy\1.12.10\byte-buddy-1.12.10.jar;C:\Users\mao\.m2\repository\org\springframework\spring-core\5.3.20\spring-core-5.3.20.jar;C:\Users\mao\.m2\repository\org\springframework\spring-jcl\5.3.20\spring-jcl-5.3.20.jar mao.docker_compose_boot.DockerComposeBootApplication
+OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.
+13:51:01.679 [Thread-0] DEBUG org.springframework.boot.devtools.restart.classloader.RestartClassLoader - Created RestartClassLoader org.springframework.boot.devtools.restart.classloader.RestartClassLoader@7ce9532c
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.0)
+
+2022-06-19 13:51:02.020  INFO 19940 --- [  restartedMain] m.d.DockerComposeBootApplication         : Starting DockerComposeBootApplication using Java 16.0.2 on mao with PID 19940 (H:\程序\大三下期\Docker_compose_boot\target\classes started by mao in H:\程序\大三下期\Docker_compose_boot)
+2022-06-19 13:51:02.021 DEBUG 19940 --- [  restartedMain] m.d.DockerComposeBootApplication         : Running with Spring Boot v2.7.0, Spring v5.3.20
+2022-06-19 13:51:02.022  INFO 19940 --- [  restartedMain] m.d.DockerComposeBootApplication         : The following 1 profile is active: "dev"
+2022-06-19 13:51:02.056  INFO 19940 --- [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2022-06-19 13:51:02.056  INFO 19940 --- [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2022-06-19 13:51:02.515  INFO 19940 --- [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode!
+2022-06-19 13:51:02.516  INFO 19940 --- [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2022-06-19 13:51:02.532  INFO 19940 --- [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 6 ms. Found 0 Redis repository interfaces.
+2022-06-19 13:51:02.953  INFO 19940 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-06-19 13:51:02.960  INFO 19940 --- [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-06-19 13:51:02.960  INFO 19940 --- [  restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.63]
+2022-06-19 13:51:03.024  INFO 19940 --- [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-06-19 13:51:03.024  INFO 19940 --- [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 967 ms
+2022-06-19 13:51:03.090  INFO 19940 --- [  restartedMain] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+2022-06-19 13:51:03.181  INFO 19940 --- [  restartedMain] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.1 
+2022-06-19 13:51:03.878  INFO 19940 --- [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2022-06-19 13:51:03.913  INFO 19940 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-06-19 13:51:03.924  INFO 19940 --- [  restartedMain] m.d.DockerComposeBootApplication         : Started DockerComposeBootApplication in 2.235 seconds (JVM running for 2.794)
+2022-06-19 13:51:17.541  INFO 19940 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2022-06-19 13:51:17.541  INFO 19940 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2022-06-19 13:51:17.543  INFO 19940 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2022-06-19 13:51:18.130 DEBUG 19940 --- [nio-8080-exec-1] m.d.mapper.StudentMapper.selectById      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student WHERE student_no=?
+2022-06-19 13:51:18.146 DEBUG 19940 --- [nio-8080-exec-1] m.d.mapper.StudentMapper.selectById      : ==> Parameters: 202012340112(Long)
+2022-06-19 13:51:18.162 DEBUG 19940 --- [nio-8080-exec-1] m.d.mapper.StudentMapper.selectById      : <==      Total: 1
+2022-06-19 13:51:37.222 DEBUG 19940 --- [nio-8080-exec-2] m.d.mapper.StudentMapper.selectById      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student WHERE student_no=?
+2022-06-19 13:51:37.223 DEBUG 19940 --- [nio-8080-exec-2] m.d.mapper.StudentMapper.selectById      : ==> Parameters: 202012340113(Long)
+2022-06-19 13:51:37.225 DEBUG 19940 --- [nio-8080-exec-2] m.d.mapper.StudentMapper.selectById      : <==      Total: 1
+
+```
+
+
+
+redis和mysql工作正常，代码运行正常
+
+
+
+项目地址：
+
+https://github.com/maomao124/Docker_compose_boot.git
+
+
+
+### 更改配置
+
+将配置文件里的127.0.0.1或者localhost更改成docker容器名称
+
+
+
+```properties
+#驱动
+jdbc.driver=com.mysql.cj.jdbc.Driver
+#url
+jdbc.url=jdbc:mysql://compose_mysql:3306/test
+#用户名
+jdbc.username=root
+#密码
+jdbc.password=20010713
+```
+
+
+
+```properties
+redis.host=compose_redis
+redis.port=6379
+redis.password=123456
+max-active=8
+max-idle=8
+max-wait=2000
+```
+
+
+
+
+
+### 生成jar包
+
+
+
+```sh
+mvn package
+```
+
+或者
+
+```sh
+mvn package -DskipTests
+```
+
+
+
+### 将jar包放入指定目录
+
+我放入的目录是C:\Users\mao\Desktop\test
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> ls
+
+
+    目录: C:\Users\mao\Desktop\test
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/6/19     14:09       49238153 Docker_compose_boot-0.0.1-SNAPSHOT.jar
+
+
+PS C:\Users\mao\Desktop\test>
+
+```
+
+
+
+
+
+### 新建Dockerfile文件
+
+在刚才的目录下建立一个Dockerfile文件，要和jdk的存放目录一致
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> ls
+
+
+    目录: C:\Users\mao\Desktop\test
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/6/19     14:14              0 Dockerfile
+-a----         2022/6/19     14:09       49238153 Docker_compose_boot-0.0.1-SNAPSHOT.jar
+
+
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+
+
+### 编写Dockerfile文件
+
+使用记事本打开，输入以下命令
+
+
+
+```sh
+# 基础镜像使用java
+FROM java17:1.0
+# 作者
+MAINTAINER mao
+# VOLUME 指定临时文件目录为/tmp，在主机/var/lib/docker目录下创建了一个临时文件并链接到容器的/tmp
+VOLUME /tmp
+# 将jar包添加到容器中并更名为Docker_compose_boot.jar
+ADD Docker_compose_boot-0.0.1-SNAPSHOT.jar Docker_compose_boot.jar
+# 运行jar包
+RUN bash -c 'touch Docker_compose_boot.jar'
+ENTRYPOINT ["java","-jar","Docker_compose_boot.jar"]
+#暴露端口作为微服务
+EXPOSE 8080
+```
+
+
+
+
+
+### 构建
+
+运行命令：
+
+```sh
+docker build -t docker_compose_boot:1.0 .
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker build -t docker_compose_boot:1.0 .
+[+] Building 1.4s (8/8) FINISHED
+ => [internal] load build definition from Dockerfile                                                                                                       0.0s
+ => => transferring dockerfile: 541B                                                                                                                       0.0s
+ => [internal] load .dockerignore                                                                                                                          0.0s
+ => => transferring context: 2B                                                                                                                            0.0s
+ => [internal] load metadata for docker.io/library/java17:1.0                                                                                              0.0s
+ => [internal] load build context                                                                                                                          0.4s
+ => => transferring context: 49.25MB                                                                                                                       0.4s
+ => CACHED [1/3] FROM docker.io/library/java17:1.0                                                                                                         0.0s
+ => [2/3] ADD Docker_compose_boot-0.0.1-SNAPSHOT.jar Docker_compose_boot.jar                                                                               0.2s
+ => [3/3] RUN bash -c 'touch Docker_compose_boot.jar'                                                                                                      0.5s
+ => exporting to image                                                                                                                                     0.2s
+ => => exporting layers                                                                                                                                    0.2s
+ => => writing image sha256:f6b5051647db9b7337febf10aabbcf57c75416745700083306d99b2da27712f4                                                               0.0s
+ => => naming to docker.io/library/docker_compose_boot:1.0                                                                                                 0.0s
+
+Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+### 查看镜像
+
+
+
+```sh
+docker images
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker images
+REPOSITORY            TAG       IMAGE ID       CREATED          SIZE
+docker_compose_boot   1.0       f6b5051647db   48 seconds ago   588MB
+docker_boot           1.0       d25f3f4955ae   25 hours ago     525MB
+java17                1.0       282982c69086   40 hours ago     489MB
+tomcat                latest    c795915cb678   3 weeks ago      680MB
+redis                 latest    53aa81e8adfa   3 weeks ago      117MB
+mysql                 latest    65b636d5542b   3 weeks ago      524MB
+ubuntu                latest    d2e4e1f51132   7 weeks ago      77.8MB
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+
+
+### 编写docker-compose.yml文件
+
+
+
+```yaml
+version: "3"
+
+services:
+  boot:
+# 镜像名称
+    image: docker_compose_boot:1.0
+# 生成后的容器名称
+    container_name: docker_compose_boot1
+#映射的端口号
+    ports:
+      - "8080:8080"
+#容器数据卷
+    #volumes:
+     # - H:/Docker/docker_compose_boot1/:/usr/local/
+#使用的网络
+    networks: 
+      - mao_net 
+#依赖
+    depends_on: 
+      - redis
+      - mysql
+
+ 
+
+  redis:
+  # 镜像名称
+    image: redis
+    # 生成后的容器名称
+    container_name: compose_redis
+    #映射的端口号
+    ports:
+      - "6383:6379"
+     #容器数据卷 
+    volumes:
+      - H:/Docker/docker_compose_redis/conf/redis.conf:/etc/redis/redis.conf
+      - H:/Docker/docker_compose_redis/data:/data
+    #使用的网络
+    networks: 
+      - mao_net
+    #命令
+    command: redis-server /etc/redis/redis.conf
+
+ 
+
+  mysql:
+  # 镜像名称
+    image: mysql
+  # 生成后的容器名称
+    container_name: compose_mysql
+   # 环境配置
+    environment:
+   #密码
+      MYSQL_ROOT_PASSWORD: '123456'
+
+      MYSQL_DATABASE: 'test'
+    # 端口
+    ports:
+       - "3310:3306"
+   #容器数据卷 
+    volumes:
+       - H:/Docker/docker_compose_mysql/data:/var/lib/mysql
+       - H:/Docker/docker_compose_mysql/conf/:/etc/mysql/conf.d
+       - H:/Docker/docker_compose_mysql/log/:/var/log/mysql
+   # 使用的网络
+    networks:
+      - mao_net
+
+    #command: --default-authentication-plugin=mysql_native_password #解决外部无法访问
+
+ 
+#网络
+networks: 
+   mao_net: 
+```
+
+
+
+需要redis配置文件
+
+
+
+### 验证compose文件
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker-compose config
+networks:
+  mao_net: {}
+services:
+  boot:
+    container_name: docker_compose_boot1
+    depends_on:
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
+    image: docker_compose_boot:1.0
+    networks:
+      mao_net: null
+    ports:
+    - published: 8080
+      target: 8080
+  mysql:
+    container_name: compose_mysql
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: '123456'
+    image: mysql
+    networks:
+      mao_net: null
+    ports:
+    - published: 3310
+      target: 3306
+    volumes:
+    - H:\Docker\docker_compose_mysql\data:/var/lib/mysql:rw
+    - H:\Docker\docker_compose_mysql\conf:/etc/mysql/conf.d:rw
+    - H:\Docker\docker_compose_mysql\log:/var/log/mysql:rw
+  redis:
+    command: redis-server /etc/redis/redis.conf
+    container_name: compose_redis
+    image: redis
+    networks:
+      mao_net: null
+    ports:
+    - published: 6383
+      target: 6379
+    volumes:
+    - H:\Docker\docker_compose_redis\conf\redis.conf:/etc/redis/redis.conf:rw
+    - H:\Docker\docker_compose_redis\data:/data:rw
+version: '3'
+
+PS C:\Users\mao\Desktop\test>
+```
+
+
+
+
+
+### 启动
+
+```sh
+docker-compose up
+```
+
+或者
+
+```sh
+docker-compose up -d
+```
+
+
+
+
+
+```sh
+PS C:\Users\mao\Desktop\test> docker-compose up
+Creating compose_redis ... done
+Creating compose_mysql ... done
+Creating docker_compose_boot1 ... done
+Attaching to compose_redis, compose_mysql, docker_compose_boot1
+compose_mysql | 2022-06-19 07:03:25+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
+compose_mysql | 2022-06-19 07:03:26+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+compose_mysql | 2022-06-19 07:03:26+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
+compose_mysql | 2022-06-19T07:03:26.397467Z 0 [Warning] [MY-010918] [Server] 'default_authentication_plugin' is deprecated and will be removed in a future release. Please use authentication_policy instead.
+compose_mysql | 2022-06-19T07:03:26.397492Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.29) starting as process 1
+compose_mysql | 2022-06-19T07:03:26.402571Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+compose_mysql | 2022-06-19T07:03:26.431945Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+compose_redis | 1:C 19 Jun 2022 07:03:25.874 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+compose_redis | 1:C 19 Jun 2022 07:03:25.874 # Redis version=7.0.0, bits=64, commit=00000000, modified=0, pid=1, just started
+compose_redis | 1:C 19 Jun 2022 07:03:25.874 # Configuration loaded
+compose_redis | 1:M 19 Jun 2022 07:03:25.875 * monotonic clock: POSIX clock_gettime
+compose_redis |                 _._
+compose_redis |            _.-``__ ''-._
+compose_redis |       _.-``    `.  `_.  ''-._           Redis 7.0.0 (00000000/0) 64 bit
+compose_redis |   .-`` .-```.  ```\/    _.,_ ''-._
+compose_redis |  (    '      ,       .-`  | `,    )     Running in standalone mode
+compose_redis |  |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
+compose_redis |  |    `-._   `._    /     _.-'    |     PID: 1
+compose_redis |   `-._    `-._  `-./  _.-'    _.-'
+compose_redis |  |`-._`-._    `-.__.-'    _.-'_.-'|
+compose_redis |  |    `-._`-._        _.-'_.-'    |           https://redis.io
+compose_redis |   `-._    `-._`-.__.-'_.-'    _.-'
+compose_redis |  |`-._`-._    `-.__.-'    _.-'_.-'|
+compose_redis |  |    `-._`-._        _.-'_.-'    |
+compose_redis |   `-._    `-._`-.__.-'_.-'    _.-'
+compose_redis |       `-._    `-.__.-'    _.-'
+compose_redis |           `-._        _.-'
+compose_redis |               `-.__.-'
+compose_redis |
+compose_redis | 1:M 19 Jun 2022 07:03:25.875 # Server initialized
+compose_redis | 1:M 19 Jun 2022 07:03:25.875 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+compose_redis | 1:M 19 Jun 2022 07:03:25.876 * The AOF directory appendonlydir doesn't exist
+compose_redis | 1:M 19 Jun 2022 07:03:25.878 * Loading RDB produced by version 7.0.0
+compose_redis | 1:M 19 Jun 2022 07:03:25.878 * RDB age 647 seconds
+compose_redis | 1:M 19 Jun 2022 07:03:25.878 * RDB memory usage when created 0.82 Mb
+compose_redis | 1:M 19 Jun 2022 07:03:25.878 * Done loading RDB, keys loaded: 1, keys expired: 0.
+compose_redis | 1:M 19 Jun 2022 07:03:25.878 * DB loaded from disk: 0.002 seconds
+compose_redis | 1:M 19 Jun 2022 07:03:25.878 * Ready to accept connections
+docker_compose_boot1 |
+docker_compose_boot1 |   .   ____          _            __ _ _
+docker_compose_boot1 |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+docker_compose_boot1 | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+docker_compose_boot1 |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+docker_compose_boot1 |   '  |____| .__|_| |_|_| |_\__, | / / / /
+docker_compose_boot1 |  =========|_|==============|___/=/_/_/_/
+docker_compose_boot1 |  :: Spring Boot ::                (v2.7.0)
+docker_compose_boot1 |
+docker_compose_boot1 | 2022-06-19 07:03:27.670  INFO 1 --- [           main] m.d.DockerComposeBootApplication         : Starting DockerComposeBootApplication v0.0.1-SNAPSHOT using Java 17.0.3.1 on 2d0bb81733e1 with PID 1 (/usr/local/Docker_compose_boot.jar started by root in /usr/local)
+docker_compose_boot1 | 2022-06-19 07:03:27.672 DEBUG 1 --- [           main] m.d.DockerComposeBootApplication         : Running with Spring Boot v2.7.0, Spring v5.3.20
+docker_compose_boot1 | 2022-06-19 07:03:27.673  INFO 1 --- [           main] m.d.DockerComposeBootApplication         : The following 1 profile is active: "dev"
+compose_mysql | 2022-06-19T07:03:27.849590Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+compose_mysql | 2022-06-19T07:03:28.147059Z 0 [System] [MY-010229] [Server] Starting XA crash recovery...
+compose_mysql | 2022-06-19T07:03:28.156001Z 0 [System] [MY-010232] [Server] XA crash recovery finished.
+compose_mysql | 2022-06-19T07:03:28.379536Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+compose_mysql | 2022-06-19T07:03:28.379949Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+compose_mysql | 2022-06-19T07:03:28.390610Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+compose_mysql | 2022-06-19T07:03:28.433725Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+compose_mysql | 2022-06-19T07:03:28.433910Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.29'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+docker_compose_boot1 | 2022-06-19 07:03:28.461  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode!
+docker_compose_boot1 | 2022-06-19 07:03:28.464  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+docker_compose_boot1 | 2022-06-19 07:03:28.484  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 0 Redis repository interfaces.
+docker_compose_boot1 | 2022-06-19 07:03:29.151  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+docker_compose_boot1 | 2022-06-19 07:03:29.160  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+docker_compose_boot1 | 2022-06-19 07:03:29.160  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.63]
+docker_compose_boot1 | 2022-06-19 07:03:29.220  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+docker_compose_boot1 | 2022-06-19 07:03:29.221  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1483 ms
+docker_compose_boot1 | 2022-06-19 07:03:29.322  INFO 1 --- [           main] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+docker_compose_boot1 | 2022-06-19 07:03:29.539  INFO 1 --- [           main] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+docker_compose_boot1 |  _ _   |_  _ _|_. ___ _ |    _
+docker_compose_boot1 | | | |\/|_)(_| | |_\  |_)||_|_\
+docker_compose_boot1 |      /               |
+docker_compose_boot1 |                         3.5.1
+docker_compose_boot1 | 2022-06-19 07:03:30.635  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+docker_compose_boot1 | 2022-06-19 07:03:30.649  INFO 1 --- [           main] m.d.DockerComposeBootApplication         : Started DockerComposeBootApplication in 3.65 seconds (JVM running for 4.144)
+
+```
+
+
+
+
+
+### 访问mysql
+
+
+
+```sh
+mysql -u root -P 3310 -p
+```
+
+密码为123456
+
+
+
+使用test数据库
+
+
+
+建表
+
+```sql
+DROP TABLE IF EXISTS `student`;
+CREATE TABLE `student`
+(
+    `student_no`              bigint                                                  NOT NULL AUTO_INCREMENT COMMENT '学生学号',
+    `name`                    varchar(12) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '学生姓名',
+    `sex`                     varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL COMMENT '学生性别',
+    `telephone_number`        varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '电话号码',
+    `family_telephone_number` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '家庭电话号码',
+    `birthday`                varchar(12) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '生日信息，由程序填充，这里用varchar型',
+    `address`                 varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '家庭地址',
+    `id_card`                 varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '身份证号码',
+    `email`                   varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '电子邮箱',
+    `dormitory_number`        varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '寝室号',
+    `class_no`                bigint                                                  NOT NULL COMMENT '所属班级编号',
+    `state`                   varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL DEFAULT NULL COMMENT '状态，在读、退学或者毕业',
+    `remarks`                 varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (`student_no`) USING BTREE,
+    UNIQUE INDEX `no` (`student_no`) USING BTREE,
+    INDEX `class_no` (`class_no`) USING BTREE
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 202012341078
+  CHARACTER SET = utf8
+  COLLATE = utf8_general_ci
+  ROW_FORMAT = DYNAMIC;
+```
+
+
+
+插入数据
+
+```sql
+INSERT INTO `student`
+VALUES (202012340101, '关亮', '男', '13004194935', '15305295308', '2000-04-21', '澳门三路107号-9-5', '439419200004213162',
+        'ev0y07@aol.com', '12栋401', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340102, '幸茗羽', '女', '15508840091', '15303468961', '2000-11-28', '武胜关广场37号-4-9', '422461200011287472',
+        'x7bqfpj@263.net', '1栋402', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340103, '五中言', '男', '13400211648', '13403154851', '2001-02-08', '东光大厦97号-14-1', '422365200102086997',
+        'jlg05zq82@msn.com', '12栋605', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340104, '邱月', '女', '15002510556', '15900573259', '2003-06-08', '韶关路12号-14-3', '432562200306087287',
+        '0fw8g1hl9@yahoo.com', '5栋121', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340105, '寿泽敬', '男', '15205711313', '15207565368', '2000-03-23', '武城广场63号-11-9', '425459200003233592',
+        'pvzem7@163.net', '11栋421', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340106, '明壮冠', '男', '13006938844', '15203703744', '2001-08-09', '济南街66号-7-4', '432821200108097814',
+        'waygeq@live.com', '8栋614', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340107, '利慧瑞', '女', '13105082904', '13905854909', '2003-01-23', '朝阳街82号-20-6', '427321200301237331',
+        's68he1w@gmail.com', '2栋406', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340108, '良爽婵', '女', '13301845205', '13208194646', '2000-06-23', '咸阳支街88号-20-4', '435758200006233465',
+        'sqryex@live.com', '2栋219', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340109, '阳婉菊', '女', '15800602721', '13404982437', '2001-04-02', '禹城街90号-4-9', '438892200104024530',
+        'giwjmp@sina.com', '5栋216', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340110, '璩璧', '女', '13600652524', '15505265367', '2000-11-05', '黄台广场122号-6-9', '430529200011053854',
+        'pb72ppog@126.com', '1栋111', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340111, '洪成健', '男', '13100250691', '13300574325', '2000-02-17', '大港沿147号-4-3', '429550200002175613',
+        'bslct5v@0355.net', '7栋523', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340112, '阳颖', '女', '15306118239', '13600833930', '2002-01-12', '嘉祥路84号-8-10', '432213200201121560',
+        'cb0m4x0j@sina.com', '3栋312', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340113, '夔琳', '女', '15301204581', '13404558326', '2001-01-19', '延安一街143号-12-10', '441050200101198751',
+        'hogajnhi@0355.net', '4栋514', 1001, '在读', '');
+INSERT INTO `student`
+VALUES (202012340114, '蒋馨凝', '女', '13705930578', '13508264247', '2003-04-01', '信号山支路120号-9-7', '437998200304013069',
+        'ddj48omr@263.net', '2栋221', 1001, '在读', '');
+```
+
+
+
+```sh
+C:\Users\mao>mysql -u root -P 3310 -p
+Enter password: ******
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.29 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases
+    -> ;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| test               |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql>
+mysql> use test
+Database changed
+mysql> DROP TABLE IF EXISTS `student`;
+Query OK, 0 rows affected, 1 warning (0.04 sec)
+
+mysql> CREATE TABLE `student`
+    -> (
+    ->     `student_no`              bigint                                                  NOT NULL AUTO_INCREMENT COMMENT '学生学号',
+    ->     `name`                    varchar(12) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '学生姓名',
+    ->     `sex`                     varchar(2) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL COMMENT '学生性别',
+    ->     `telephone_number`        varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '电话号码',
+    ->     `family_telephone_number` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '家庭电话号码',
+    ->     `birthday`                varchar(12) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '生日信息，由程序填充，这里用varchar型',
+    ->     `address`                 varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '家庭地址',
+    ->     `id_card`                 varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '身份证号码',
+    ->     `email`                   varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '电子邮箱',
+    ->     `dormitory_number`        varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL DEFAULT NULL COMMENT '寝室号',
+    ->     `class_no`                bigint                                                  NOT NULL COMMENT '所属班级编号',
+    ->     `state`                   varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL DEFAULT NULL COMMENT '状态，在读、退学或者毕业',
+    ->     `remarks`                 varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
+    ->     PRIMARY KEY (`student_no`) USING BTREE,
+    ->     UNIQUE INDEX `no` (`student_no`) USING BTREE,
+    ->     INDEX `class_no` (`class_no`) USING BTREE
+    -> ) ENGINE = InnoDB
+    ->   AUTO_INCREMENT = 202012341078
+    ->   CHARACTER SET = utf8
+    ->   COLLATE = utf8_general_ci
+    ->   ROW_FORMAT = DYNAMIC;
+Query OK, 0 rows affected, 24 warnings (0.53 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340101, '关亮', '男', '13004194935', '15305295308', '2000-04-21', '澳门三路107号-9-5', '439419200004213162',
+    ->         'ev0y07@aol.com', '12栋401', 1001, '在读', '');
+Query OK, 1 row affected (0.05 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340102, '幸茗羽', '女', '15508840091', '15303468961', '2000-11-28', '武胜关广场37号-4-9', '422461200011287472',
+    ->         'x7bqfpj@263.net', '1栋402', 1001, '在读', '');
+Query OK, 1 row affected (0.07 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340103, '五中言', '男', '13400211648', '13403154851', '2001-02-08', '东光大厦97号-14-1', '422365200102086997',
+    ->         'jlg05zq82@msn.com', '12栋605', 1001, '在读', '');
+Query OK, 1 row affected (0.06 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340104, '邱月', '女', '15002510556', '15900573259', '2003-06-08', '韶关路12号-14-3', '432562200306087287',
+    ->         '0fw8g1hl9@yahoo.com', '5栋121', 1001, '在读', '');
+Query OK, 1 row affected (0.08 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340105, '寿泽敬', '男', '15205711313', '15207565368', '2000-03-23', '武城广场63号-11-9', '425459200003233592',
+    ->         'pvzem7@163.net', '11栋421', 1001, '在读', '');
+Query OK, 1 row affected (0.06 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340106, '明壮冠', '男', '13006938844', '15203703744', '2001-08-09', '济南街66号-7-4', '432821200108097814',
+    ->         'waygeq@live.com', '8栋614', 1001, '在读', '');
+Query OK, 1 row affected (0.08 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340107, '利慧瑞', '女', '13105082904', '13905854909', '2003-01-23', '朝阳街82号-20-6', '427321200301237331',
+    ->         's68he1w@gmail.com', '2栋406', 1001, '在读', '');
+Query OK, 1 row affected (0.24 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340108, '良爽婵', '女', '13301845205', '13208194646', '2000-06-23', '咸阳支街88号-20-4', '435758200006233465',
+    ->         'sqryex@live.com', '2栋219', 1001, '在读', '');
+Query OK, 1 row affected (0.14 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340109, '阳婉菊', '女', '15800602721', '13404982437', '2001-04-02', '禹城街90号-4-9', '438892200104024530',
+    ->         'giwjmp@sina.com', '5栋216', 1001, '在读', '');
+Query OK, 1 row affected (0.14 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340110, '璩璧', '女', '13600652524', '15505265367', '2000-11-05', '黄台广场122号-6-9', '430529200011053854',
+    ->         'pb72ppog@126.com', '1栋111', 1001, '在读', '');
+Query OK, 1 row affected (0.09 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340111, '洪成健', '男', '13100250691', '13300574325', '2000-02-17', '大港沿147号-4-3', '429550200002175613',
+    ->         'bslct5v@0355.net', '7栋523', 1001, '在读', '');
+Query OK, 1 row affected (0.04 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340112, '阳颖', '女', '15306118239', '13600833930', '2002-01-12', '嘉祥路84号-8-10', '432213200201121560',
+    ->         'cb0m4x0j@sina.com', '3栋312', 1001, '在读', '');
+Query OK, 1 row affected (0.07 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340113, '夔琳', '女', '15301204581', '13404558326', '2001-01-19', '延安一街143号-12-10', '441050200101198751',
+    ->         'hogajnhi@0355.net', '4栋514', 1001, '在读', '');
+Query OK, 1 row affected (0.07 sec)
+
+mysql> INSERT INTO `student`
+    -> VALUES (202012340114, '蒋馨凝', '女', '13705930578', '13508264247', '2003-04-01', '信号山支路120号-9-7', '437998200304013069',
+    ->         'ddj48omr@263.net', '2栋221', 1001, '在读', '');
+Query OK, 1 row affected (0.04 sec)
+
+mysql> select * from student
+    -> ;
++--------------+--------+-----+------------------+-------------------------+------------+---------------------+--------------------+---------------------+------------------+----------+-------+---------+
+| student_no   | name   | sex | telephone_number | family_telephone_number | birthday   | address             | id_card            | email               | dormitory_number | class_no | state | remarks |
++--------------+--------+-----+------------------+-------------------------+------------+---------------------+--------------------+---------------------+------------------+----------+-------+---------+
+| 202012340101 | 关亮   | 男  | 13004194935      | 15305295308             | 2000-04-21 | 澳门三路107号-9-5   | 439419200004213162 | ev0y07@aol.com      | 12栋401          |     1001 | 在读  |         |
+| 202012340102 | 幸茗羽 | 女  | 15508840091      | 15303468961             | 2000-11-28 | 武胜关广场37号-4-9  | 422461200011287472 | x7bqfpj@263.net     | 1栋402           |     1001 | 在读  |         |
+| 202012340103 | 五中言 | 男  | 13400211648      | 13403154851             | 2001-02-08 | 东光大厦97号-14-1   | 422365200102086997 | jlg05zq82@msn.com   | 12栋605          |     1001 | 在读  |         |
+| 202012340104 | 邱月   | 女  | 15002510556      | 15900573259             | 2003-06-08 | 韶关路12号-14-3     | 432562200306087287 | 0fw8g1hl9@yahoo.com | 5栋121           |     1001 | 在读  |         |
+| 202012340105 | 寿泽敬 | 男  | 15205711313      | 15207565368             | 2000-03-23 | 武城广场63号-11-9   | 425459200003233592 | pvzem7@163.net      | 11栋421          |     1001 | 在读  |         |
+| 202012340106 | 明壮冠 | 男  | 13006938844      | 15203703744             | 2001-08-09 | 济南街66号-7-4      | 432821200108097814 | waygeq@live.com     | 8栋614           |     1001 | 在读  |         |
+| 202012340107 | 利慧瑞 | 女  | 13105082904      | 13905854909             | 2003-01-23 | 朝阳街82号-20-6     | 427321200301237331 | s68he1w@gmail.com   | 2栋406           |     1001 | 在读  |         |
+| 202012340108 | 良爽婵 | 女  | 13301845205      | 13208194646             | 2000-06-23 | 咸阳支街88号-20-4   | 435758200006233465 | sqryex@live.com     | 2栋219           |     1001 | 在读  |         |
+| 202012340109 | 阳婉菊 | 女  | 15800602721      | 13404982437             | 2001-04-02 | 禹城街90号-4-9      | 438892200104024530 | giwjmp@sina.com     | 5栋216           |     1001 | 在读  |         |
+| 202012340110 | 璩璧   | 女  | 13600652524      | 15505265367             | 2000-11-05 | 黄台广场122号-6-9   | 430529200011053854 | pb72ppog@126.com    | 1栋111           |     1001 | 在读  |         |
+| 202012340111 | 洪成健 | 男  | 13100250691      | 13300574325             | 2000-02-17 | 大港沿147号-4-3     | 429550200002175613 | bslct5v@0355.net    | 7栋523           |     1001 | 在读  |         |
+| 202012340112 | 阳颖   | 女  | 15306118239      | 13600833930             | 2002-01-12 | 嘉祥路84号-8-10     | 432213200201121560 | cb0m4x0j@sina.com   | 3栋312           |     1001 | 在读  |         |
+| 202012340113 | 夔琳   | 女  | 15301204581      | 13404558326             | 2001-01-19 | 延安一街143号-12-10 | 441050200101198751 | hogajnhi@0355.net   | 4栋514           |     1001 | 在读  |         |
+| 202012340114 | 蒋馨凝 | 女  | 13705930578      | 13508264247             | 2003-04-01 | 信号山支路120号-9-7 | 437998200304013069 | ddj48omr@263.net    | 2栋221           |     1001 | 在读  |         |
++--------------+--------+-----+------------------+-------------------------+------------+---------------------+--------------------+---------------------+------------------+----------+-------+---------+
+14 rows in set (0.00 sec)
+
+mysql>
+```
+
+
+
+
+
+### 访问服务
+
+http://localhost:8080/student/
+
+http://localhost:8080/student/202012340101
+
+http://localhost:8080/student/202012340102
+
+
+
+```sh
+docker_compose_boot1 | 2022-06-19 10:40:39.568  WARN 1 --- [nio-8080-exec-4] c.a.druid.pool.DruidAbstractDataSource   : discard long time none received connection. , jdbcUrl : jdbc:mysql://compose_mysql:3306/test, version : 1.2.8, lastPacketReceivedIdleMillis : 81682
+docker_compose_boot1 | 2022-06-19 10:40:39.589 DEBUG 1 --- [nio-8080-exec-4] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:40:39.590 DEBUG 1 --- [nio-8080-exec-4] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:40:39.617 DEBUG 1 --- [nio-8080-exec-4] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:40:40.453 DEBUG 1 --- [nio-8080-exec-5] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:40:40.454 DEBUG 1 --- [nio-8080-exec-5] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:40:40.463 DEBUG 1 --- [nio-8080-exec-5] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:40:40.887 DEBUG 1 --- [nio-8080-exec-6] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:40:40.888 DEBUG 1 --- [nio-8080-exec-6] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:40:40.892 DEBUG 1 --- [nio-8080-exec-6] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:40:41.077 DEBUG 1 --- [nio-8080-exec-7] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:40:41.078 DEBUG 1 --- [nio-8080-exec-7] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:40:41.082 DEBUG 1 --- [nio-8080-exec-7] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:41:36.967 DEBUG 1 --- [nio-8080-exec-8] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:41:36.968 DEBUG 1 --- [nio-8080-exec-8] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:41:36.971 DEBUG 1 --- [nio-8080-exec-8] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:41:37.507 DEBUG 1 --- [nio-8080-exec-9] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:41:37.508 DEBUG 1 --- [nio-8080-exec-9] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:41:37.511 DEBUG 1 --- [nio-8080-exec-9] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:41:37.718 DEBUG 1 --- [io-8080-exec-10] m.d.mapper.StudentMapper.selectList      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student
+docker_compose_boot1 | 2022-06-19 10:41:37.719 DEBUG 1 --- [io-8080-exec-10] m.d.mapper.StudentMapper.selectList      : ==> Parameters:
+docker_compose_boot1 | 2022-06-19 10:41:37.722 DEBUG 1 --- [io-8080-exec-10] m.d.mapper.StudentMapper.selectList      : <==      Total: 14
+docker_compose_boot1 | 2022-06-19 10:41:48.618 DEBUG 1 --- [nio-8080-exec-2] m.d.mapper.StudentMapper.selectById      : ==>  Preparing: SELECT student_no,name,sex,telephone_number,family_telephone_number,birthday,address,id_card,email,dormitory_number,class_no,state,remarks FROM student WHERE student_no=?
+docker_compose_boot1 | 2022-06-19 10:41:48.618 DEBUG 1 --- [nio-8080-exec-2] m.d.mapper.StudentMapper.selectById      : ==> Parameters: 202012340101(Long)
+docker_compose_boot1 | 2022-06-19 10:41:48.622 DEBUG 1 --- [nio-8080-exec-2] m.d.mapper.StudentMapper.selectById      : <==      Total: 1
+```
+
+
+
+
+
+```sh
+C:\Users\mao>redis-cli -p 6383
+127.0.0.1:6383> ping
+PONG
+127.0.0.1:6383> keys *
+1) "docker_compose_boot:student:202012340101"
+2) "docker_compose_boot:student:202012340102"
+3) "a"
+127.0.0.1:6383>
+```
+
+
+
+服务正常运行
+
+
+
+
+
+
+
+# portainer
+
