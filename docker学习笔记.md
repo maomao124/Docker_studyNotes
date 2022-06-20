@@ -5973,3 +5973,240 @@ PONG
 
 # portainer
 
+## 是什么
+
+Portainer 是一款轻量级的应用，它提供了图形化界面，用于方便地管理Docker环境，包括单机环境和集群环境。
+
+
+
+## 安装
+
+```sh
+docker run -d -p 8000:8000 -p 9000:9000 --name portainer --restart=always  -v \\.\pipe\docker_engine:\\.\pipe\docker_engine -v H:/Docker/portainer/data/:/data portainer/portainer
+```
+
+
+
+
+```sh
+docker run -d -p 8000:8000 -p 9000:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+```
+
+
+
+
+
+## 访问
+
+http://localhost:9000/
+
+
+
+
+
+# CAdvisor+InfluxDB+Granfana
+
+CAdvisor监控收集+InfluxDB存储数据+Granfana展示图表
+
+
+
+docker-compose.yml
+
+```yaml
+version: '3.1'
+
+ 
+volumes:
+  grafana_data: {}
+
+services:
+ influxdb:
+  image: tutum/influxdb:0.9
+  restart: always
+  environment:
+    - PRE_CREATE_DB=cadvisor
+  ports:
+    - "8083:8083"
+    - "8086:8086"
+  volumes:
+    - H:\Docker\influxdb:/data
+
+ 
+ cadvisor:
+  image: google/cadvisor
+  links:
+    - influxdb:influxsrv
+  command: -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxsrv:8086
+  restart: always
+  ports:
+    - "8080:8080"
+  #volumes:
+    #- H:\Docker\cadvisor:/rootfs:ro
+    #- H:\Docker\cadvisor/run:/var/run:rw
+    #- H:\Docker\cadvisor/sys:/sys:ro
+    #- H:\Docker\cadvisor/docker/:/var/lib/docker:ro
+
+ 
+
+ grafana:
+  user: "104"
+  image: grafana/grafana
+  user: "104"
+  restart: always
+  links:
+    - influxdb:influxsrv
+  ports:
+    - "3000:3000"
+  volumes:
+    - H:\Docker\grafana:/var/lib/grafana
+  environment:
+    - HTTP_USER=admin
+    - HTTP_PASS=admin
+    - INFLUXDB_HOST=influxsrv
+    - INFLUXDB_PORT=8086
+    - INFLUXDB_NAME=cadvisor
+    - INFLUXDB_USER=root
+    - INFLUXDB_PASS=root
+```
+
+
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker-compose up
+Creating network "desktop_default" with the default driver
+Creating desktop_influxdb_1 ... done
+Creating desktop_cadvisor_1 ... done
+Creating desktop_grafana_1  ... done
+Attaching to desktop_influxdb_1, desktop_grafana_1, desktop_cadvisor_1
+influxdb_1  | => The initialization script had been executed before, skipping ...
+influxdb_1  | => Starting InfluxDB in foreground ...
+influxdb_1  |
+influxdb_1  |  8888888           .d888 888                   8888888b.  888888b.
+influxdb_1  |    888            d88P"  888                   888  "Y88b 888  "88b
+influxdb_1  |    888            888    888                   888    888 888  .88P
+influxdb_1  |    888   88888b.  888888 888 888  888 888  888 888    888 8888888K.
+influxdb_1  |    888   888 "88b 888    888 888  888  Y8bd8P' 888    888 888  "Y88b
+influxdb_1  |    888   888  888 888    888 888  888   X88K   888    888 888    888
+influxdb_1  |    888   888  888 888    888 Y88b 888 .d8""8b. 888  .d88P 888   d88P
+influxdb_1  |  8888888 888  888 888    888  "Y88888 888  888 8888888P"  8888888P"
+influxdb_1  |
+influxdb_1  | 2022/06/19 12:01:42 InfluxDB starting, version 0.9.6.1, branch 0.9.6, commit 6d3a8603cfdaf1a141779ed88b093dcc5c528e5e, built 2015-12-10T23:40:23+0000
+influxdb_1  | 2022/06/19 12:01:42 Go version go1.4.2, GOMAXPROCS set to 16
+influxdb_1  | 2022/06/19 12:01:42 Using configuration at: /config/config.toml
+influxdb_1  | [metastore] 2022/06/19 12:01:42 Using data dir: /data/meta
+influxdb_1  | [metastore] 2022/06/19 12:01:43 Node at localhost:8088 [Follower]
+influxdb_1  | [metastore] 2022/06/19 12:01:43 Skipping cluster join: already member of cluster: nodeId=1 raftEnabled=true peers=[localhost:8088]
+cadvisor_1  | E0619 12:01:44.530155       1 info.go:140] Failed to get system UUID: open /etc/machine-id: no such file or directory
+cadvisor_1  | W0619 12:01:44.530231       1 info.go:53] Couldn't collect info from any of the files in "/etc/machine-id,/var/lib/dbus/machine-id"
+cadvisor_1  | W0619 12:01:44.533160       1 manager.go:349] Could not configure a source for OOM detection, disabling OOM events: open /dev/kmsg: no such file or directory
+grafana_1   | Error checking server process execution privilege. error: could not get current OS user to detect process privileges
+grafana_1   | logger=settings t=2022-06-19T12:01:44.60664344Z level=info msg="Starting Grafana" version=9.0.0 commit=b5c56f6371 branch=HEAD compiled=2022-06-13T12:06:48Z
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606814907Z level=info msg="Config loaded from" file=/usr/share/grafana/conf/defaults.ini
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606845927Z level=info msg="Config loaded from" file=/etc/grafana/grafana.ini
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606852886Z level=info msg="Config overridden from command line" arg="default.paths.data=/var/lib/grafana"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606857126Z level=info msg="Config overridden from command line" arg="default.paths.logs=/var/log/grafana"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606860616Z level=info msg="Config overridden from command line" arg="default.paths.plugins=/var/lib/grafana/plugins"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606863766Z level=info msg="Config overridden from command line" arg="default.paths.provisioning=/etc/grafana/provisioning"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606866896Z level=info msg="Config overridden from command line" arg="default.log.mode=console"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606870246Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_DATA=/var/lib/grafana"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606873506Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_LOGS=/var/log/grafana"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606876846Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_PLUGINS=/var/lib/grafana/plugins"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606880666Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_PROVISIONING=/etc/grafana/provisioning"
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606884216Z level=info msg="Path Home" path=/usr/share/grafana
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606887446Z level=info msg="Path Data" path=/var/lib/grafana
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606890946Z level=info msg="Path Logs" path=/var/log/grafana
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606895156Z level=info msg="Path Plugins" path=/var/lib/grafana/plugins
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606898586Z level=info msg="Path Provisioning" path=/etc/grafana/provisioning
+grafana_1   | logger=settings t=2022-06-19T12:01:44.606902416Z level=info msg="App mode production"
+grafana_1   | logger=sqlstore t=2022-06-19T12:01:44.607202306Z level=info msg="Connecting to DB" dbtype=sqlite3
+grafana_1   | logger=migrator t=2022-06-19T12:01:44.638747149Z level=info msg="Starting DB migrations"
+grafana_1   | logger=migrator t=2022-06-19T12:01:44.646891742Z level=info msg="migrations completed" performed=0 skipped=422 duration=475.982µs
+grafana_1   | logger=plugin.manager t=2022-06-19T12:01:44.674620798Z level=info msg="Plugin registered" pluginId=input
+grafana_1   | logger=secrets t=2022-06-19T12:01:44.678725671Z level=info msg="Envelope encryption state" enabled=true currentprovider=secretKey.v1
+grafana_1   | logger=query_data t=2022-06-19T12:01:44.682881351Z level=info msg="Query Service initialization"
+grafana_1   | logger=live.push_http t=2022-06-19T12:01:44.686075391Z level=info msg="Live Push Gateway initialization"
+influxdb_1  | [metastore] 2022/06/19 12:01:44 Node at localhost:8088 [Leader]. peers=[localhost:8088]
+grafana_1   | logger=infra.usagestats.collector t=2022-06-19T12:01:44.825511242Z level=info msg="registering usage stat providers" usageStatsProvidersLen=2
+grafana_1   | logger=ngalert t=2022-06-19T12:01:44.825912226Z level=info msg="warming cache for startup"
+grafana_1   | logger=grafanaStorageLogger t=2022-06-19T12:01:44.826668689Z level=info msg="storage starting"
+grafana_1   | logger=ngalert.multiorg.alertmanager t=2022-06-19T12:01:44.8301066Z level=info msg="starting MultiOrg Alertmanager"
+grafana_1   | logger=http.server t=2022-06-19T12:01:44.830362457Z level=info msg="HTTP Server Listen" address=[::]:3000 protocol=http subUrl= socket=
+influxdb_1  | [metastore] 2022/06/19 12:01:44 spun up monitoring for 1
+influxdb_1  | [store] 2022/06/19 12:01:44 Using data dir: /data/db
+influxdb_1  | [metastore] 2022/06/19 12:01:44 Updated node id=1 hostname=localhost:8088
+influxdb_1  | [wal] 2022/06/19 12:01:45 WAL starting with 30720 ready series size, 0.50 compaction threshold, and 52428800 partition size threshold
+influxdb_1  | [wal] 2022/06/19 12:01:45 WAL writing to /data/wal/_internal/monitor/1
+influxdb_1  | [handoff] 2022/06/19 12:01:45 Starting hinted handoff service
+influxdb_1  | [monitor] 2022/06/19 12:01:45 'hh' registered for diagnostics monitoring
+influxdb_1  | [handoff] 2022/06/19 12:01:45 Using data dir: /data/hh
+influxdb_1  | [subscriber] 2022/06/19 12:01:45 opened service
+influxdb_1  | [monitor] 2022/06/19 12:01:45 Starting monitor system
+influxdb_1  | [monitor] 2022/06/19 12:01:45 'build' registered for diagnostics monitoring
+influxdb_1  | [monitor] 2022/06/19 12:01:45 'runtime' registered for diagnostics monitoring
+influxdb_1  | [monitor] 2022/06/19 12:01:45 'network' registered for diagnostics monitoring
+influxdb_1  | [monitor] 2022/06/19 12:01:45 'system' registered for diagnostics monitoring
+influxdb_1  | [cluster] 2022/06/19 12:01:45 Starting cluster service
+influxdb_1  | [shard-precreation] 2022/06/19 12:01:45 Starting precreation service with check interval of 10m0s, advance period of 30m0s
+influxdb_1  | [snapshot] 2022/06/19 12:01:45 Starting snapshot service
+influxdb_1  | [copier] 2022/06/19 12:01:45 Starting copier service
+influxdb_1  | [admin] 2022/06/19 12:01:45 Starting admin service
+influxdb_1  | [monitor] 2022/06/19 12:01:45 Storing statistics in database '_internal' retention policy '', at interval 10s
+influxdb_1  | [admin] 2022/06/19 12:01:45 Listening on HTTP: [::]:8083
+influxdb_1  | [continuous_querier] 2022/06/19 12:01:45 Starting continuous query service
+influxdb_1  | [httpd] 2022/06/19 12:01:45 Starting HTTP service
+influxdb_1  | [httpd] 2022/06/19 12:01:45 Authentication enabled: false
+influxdb_1  | [httpd] 2022/06/19 12:01:45 Listening on HTTP: [::]:8086
+influxdb_1  | [retention] 2022/06/19 12:01:45 Starting retention policy enforcement service with check interval of 10m0s
+influxdb_1  | [run] 2022/06/19 12:01:45 Listening for signals
+influxdb_1  | 2022/06/19 12:01:45 Sending anonymous usage statistics to m.influxdb.com
+grafana_1   | logger=context traceID=00000000000000000000000000000000 userId=1 orgId=1 uname=admin t=2022-06-19T12:01:48.276921875Z level=info msg="Request Completed" method=GET path=/api/live/ws status=0 remote_addr=172.21.0.1 time_ms=12 duration=12.329638ms size=0 referer= traceID=00000000000000000000000000000000
+influxdb_1  | [wal] 2022/06/19 12:02:01 Flush due to idle. Flushing 2 series with 2 points and 160 bytes from partition 1
+influxdb_1  | [wal] 2022/06/19 12:02:01 write to index of partition 1 took 63.682791ms
+influxdb_1  | [wal] 2022/06/19 12:02:11 Flush due to idle. Flushing 6 series with 6 points and 390 bytes from partition 1
+influxdb_1  | [wal] 2022/06/19 12:02:11 write to index of partition 1 took 51.990898ms
+```
+
+
+
+
+
+## 访问
+
+CAdvisor监控收集：
+
+http://localhost:8080/
+
+
+
+influxdb存储数据：
+
+http://localhost:8083/
+
+
+
+grafana：
+
+http://localhost:3000/
+
+
+
+
+
+
+
+----
+
+end
+
+by mao
+
+----
+
+2022/06/20
+
+----
+
+
+
